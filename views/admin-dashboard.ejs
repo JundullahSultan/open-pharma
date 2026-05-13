@@ -1,170 +1,426 @@
 <%- include('partials/admin-header', { title: t.adminDashboard.title, page: 'dashboard' }) %>
 
+<style>
+    .compact-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .stat-card-mini {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px;
+        background: var(--surface-dark);
+        border-radius: 10px;
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--shadow-sm);
+    }
+    .stat-card-mini .icon-box {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+    }
+    .stat-card-mini h3 { margin: 0; font-size: 1.25rem; color: var(--text-main); }
+    .stat-card-mini p { margin: 0; font-size: 0.75rem; color: var(--text-muted); }
+    
+    .dashboard-layout {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 20px;
+        align-items: start;
+    }
+    @media (max-width: 992px) {
+        .dashboard-layout { grid-template-columns: 1fr; }
+    }
+
+    /* Desktop table visible, hidden on mobile */
+    .recent-orders-table { display: block; }
+    @media (max-width: 768px) {
+        .recent-orders-table { display: none; }
+    }
+
+    /* Mobile card list hidden on desktop */
+    .orders-mobile-list {
+        display: none;
+        flex-direction: column;
+        gap: 10px;
+    }
+    @media (max-width: 768px) {
+        .orders-mobile-list { display: flex; }
+    }
+
+    .order-mobile-card {
+        background: var(--surface-dark);
+        border: 1px solid var(--glass-border);
+        border-radius: 12px;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        box-shadow: var(--shadow-sm);
+    }
+    .order-mobile-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+    .order-mobile-medicine {
+        font-weight: 600;
+        color: var(--text-main);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
+    }
+    .order-mobile-total {
+        font-weight: 700;
+        color: var(--text-main);
+        white-space: nowrap;
+    }
+    .order-mobile-info {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .order-mobile-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+    }
+    .order-eye-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: 1px solid var(--glass-border);
+        background: transparent;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+    .order-eye-btn:hover {
+        color: var(--primary);
+        background: rgba(59,130,246,0.1);
+        border-color: var(--primary);
+    }
+    .order-action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: 1px solid var(--glass-border);
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+    .order-action-btn.approve {
+        color: var(--success);
+        border-color: var(--success);
+    }
+    .order-action-btn.approve:hover {
+        background: var(--success);
+        color: white;
+    }
+    .order-action-btn.cancel {
+        color: var(--danger);
+        border-color: var(--danger);
+    }
+    .order-action-btn.cancel:hover {
+        background: var(--danger);
+        color: white;
+    }
+    .order-mobile-status {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .order-mobile-status .badge {
+        margin-left: 6px;
+    }
+    .order-mobile-detail {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+
+    /* Modal detail grid */
+    #orderDetailModal .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+    @media (max-width: 480px) {
+        #orderDetailModal .detail-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    #orderDetailModal .detail-grid p { margin: 0; color: var(--text-main); }
+    #orderDetailModal .detail-grid strong {
+        display: block;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-bottom: 2px;
+    }
+</style>
+
 <div id="toast-container"></div>
 
-<section class="stats-grid">
-    <div class="card stat-card">
+<section class="compact-stats">
+    <div class="stat-card-mini">
         <div class="icon-box blue"><i class="ph ph-users"></i></div>
-        <div class="stat-card-number">
+        <div>
             <h3><%= totalUsers %></h3>
             <p><%- t.adminDashboard.totalUsers %></p>
         </div>
     </div>
-    <div class="card stat-card">
+    <div class="stat-card-mini">
         <div class="icon-box purple"><i class="ph ph-flask"></i></div>
-        <div class="stat-card-number">
+        <div>
             <h3><%= totalMedicines %></h3>
             <p><%- t.adminDashboard.totalMedicines %></p>
         </div>
     </div>
-    <div class="card stat-card">
+    <div class="stat-card-mini">
         <div class="icon-box green"><i class="ph ph-shopping-cart"></i></div>
-        <div class="stat-card-number">
+        <div>
             <h3><%= totalOrders %></h3>
             <p><%- t.adminDashboard.totalOrders %></p>
         </div>
     </div>
+    <div class="stat-card-mini" style="border-left: 3px solid var(--warning);">
+        <div>
+            <h3><%= pendingOrders %></h3>
+            <p><%- t.adminDashboard.pending %></p>
+        </div>
+    </div>
+    <div class="stat-card-mini" style="border-left: 3px solid var(--success);">
+        <div>
+            <h3><%= approvedOrders %></h3>
+            <p><%- t.adminDashboard.approved %></p>
+        </div>
+    </div>
+    <div class="stat-card-mini" style="border-left: 3px solid var(--danger);">
+        <div>
+            <h3><%= cancelledOrders %></h3>
+            <p><%- t.adminDashboard.cancelled %></p>
+        </div>
+    </div>
 </section>
 
-<section class="breakdown-grid">
-    <div class="card breakdown-card pending">
-        <span><%- t.adminDashboard.pending %></span>
-        <h2><%= pendingOrders %></h2>
-    </div>
-    <div class="card breakdown-card approved">
-        <span><%- t.adminDashboard.approved %></span>
-        <h2><%= approvedOrders %></h2>
-    </div>
-    <div class="card breakdown-card cancelled">
-        <span><%- t.adminDashboard.cancelled %></span>
-        <h2><%= cancelledOrders %></h2>
-    </div>
-</section>
-
-<div class="content-split">
-    <section class="card recent-orders">
+<div class="dashboard-layout">
+    
+    <section class="card recent-orders" style="margin: 0;">
         <div class="card-header">
             <h2><%- t.adminDashboard.recentOrders %></h2>
             <button class="btn-text"><a href="/admin/orders"><%- t.common.viewAll %></a></button>
         </div>
-        <table>
-            <thead>
-                <tr>
-                    <th><%- t.userRequest.medName %></th>
-                    <th><%- t.common.pharmacy %></th>
-                    <th><%- t.common.date %></th>
-                    <th><%- t.common.total %></th>
-                    <th><%- t.common.status %></th>
-                    <th><%- t.common.actions %></th>
-                </tr>
-            </thead>
-            <tbody>
-                <% orders.forEach(order => { %>
-                <tr id="order-row-<%= order._id %>">
-                    <td><strong><%= order.medicineId ? order.medicineId.name : t.adminOrders.deletedMedicine %></strong></td>
-                    
-                    <td><%= order.user ? (order.user.pharmacy || order.user.name) : t.adminOrders.unknownUser %></td>
-                    
-                    <% const orderDate = new Date(order.createdAt).toLocaleDateString('en-US') %>
-                    <td><%= orderDate %></td>
-                    
-                    <td>$<%= order.totalPrice %></td>
-                    
-                    <td>
-                        <span class="badge <%= order.status %>" id="status-badge-<%= order._id %>">
+
+        <div class="recent-orders-table" style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th><%- t.userRequest.medName %></th>
+                        <th><%- t.common.pharmacy %></th>
+                        <th><%- t.common.date %></th>
+                        <th><%- t.common.total %></th>
+                        <th><%- t.common.status %></th>
+                        <th><%- t.common.actions %></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% orders.forEach(order => { %>
+                    <tr id="order-row-<%= order._id %>">
+                        <td><strong><%= order.medicineId ? order.medicineId.name : t.adminOrders.deletedMedicine %></strong></td>
+                        <td><%= order.user ? (order.user.pharmacy || order.user.name) : t.adminOrders.unknownUser %></td>
+                        <% const orderDate = new Date(order.createdAt).toLocaleDateString('en-US') %>
+                        <td><%= orderDate %></td>
+                        <td>$<%= order.totalPrice %></td>
+                        <td>
+                            <span class="badge <%= order.status %>" id="status-badge-<%= order._id %>">
+                                <%= order.status %>
+                            </span>
+                        </td>
+                        <td>
+                            <% if(order.status === 'pending') { %>
+                                <div class="actions" id="actions-<%= order._id %>">
+                                    <button class="btn-icon approve dashboard-action-btn" title="Approve" data-id="<%= order._id %>" data-status="approved">
+                                        <i class="ph ph-check"></i>
+                                    </button>
+                                    <button class="btn-icon cancel dashboard-action-btn" title="Cancel" data-id="<%= order._id %>" data-status="cancelled">
+                                        <i class="ph ph-x"></i>
+                                    </button>
+                                </div>
+                            <% } else { %>
+                                <span class="text-muted">-</span>
+                            <% } %>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="orders-mobile-list" id="mobile-orders-list">
+            <% orders.forEach((order) => { %>
+            <div class="order-mobile-card" id="mobile-order-<%= order._id %>">
+                <div class="order-mobile-top">
+                    <span class="order-mobile-medicine" title="<%= order.medicineId ? order.medicineId.name : '' %>">
+                        <%= order.medicineId ? order.medicineId.name : t.adminOrders.deletedMedicine %>
+                    </span>
+                    <span class="order-mobile-total">$<%= order.totalPrice %></span>
+                </div>
+                <div class="order-mobile-info">
+                    <div class="order-mobile-detail">
+                        <i class="ph ph-storefront"></i>
+                        <span><%= order.user ? (order.user.pharmacy || order.user.name) : t.adminOrders.unknownUser %></span>
+                    </div>
+                    <div class="order-mobile-status">
+                        <span class="badge <%= order.status %>" id="mobile-status-badge-<%= order._id %>">
                             <%= order.status %>
                         </span>
-                    </td>
+                    </div>
+                </div>
+                <div class="order-mobile-actions">
                     
-                    <td>
-                        <% if(order.status === 'pending') { %>
-                            <div class="actions" id="actions-<%= order._id %>">
-                                <button class="btn-icon approve dashboard-action-btn" 
-                                        title="Approve"
-                                        data-id="<%= order._id %>"
-                                        data-status="approved">
-                                    <i class="ph ph-check"></i>
-                                </button>
-                                
-                                <button class="btn-icon cancel dashboard-action-btn" 
-                                        title="Cancel"
-                                        data-id="<%= order._id %>"
-                                        data-status="cancelled">
-                                    <i class="ph ph-x"></i>
-                                </button>
-                            </div>
-                        <% } else { %>
-                            <span class="text-muted">-</span>
-                        <% } %>
-                    </td>
-                </tr>
-                <% }) %>
-            </tbody>
-        </table>
-    </section>
-
-    <section class="card create-user">
-        <div class="card-header">
-            <h2><%- t.adminDashboard.createUser %></h2>
-        </div>
-        <form id="createUserForm" enctype="multipart/form-data">
-            <div class="form-group">
-                <label><%- t.auth.fullName %></label>
-                <input type="text" name="name" placeholder="e.g. John Doe" required>
-            </div>
-            <div class="form-group">
-                <label><%- t.auth.pharmacyName %></label>
-                <input type="text" name="pharmacy" placeholder="Pharmacy Name" required>
-            </div>
-            <div class="form-group">
-                <label><%- t.common.email %></label>
-                <input type="email" name="email" placeholder="pharmacy@email.com" required>
-            </div>
-            <div class="form-group">
-                <label><%- t.common.password %></label>
-                <input type="password" name="password" placeholder="••••••••" required>
-            </div>
-            
-            <div class="form-group">
-                <label>Profile Image</label>
-                <input type="file" name="imageURL" accept="image/*" class="file-input">
-            </div>
-
-            <div class="form-group">
-                <label><%- t.common.role %></label>
-                <div class="radio-group">
-                    <label class="radio-box">
-                        <input type="radio" name="role" value="user" checked>
-                        <span><%- t.adminDashboard.pharmacyRole %></span>
-                    </label>
-                    <label class="radio-box">
-                        <input type="radio" name="role" value="admin">
-                        <span><%- t.adminDashboard.adminRole %></span>
-                    </label>
+                    <button class="order-eye-btn" 
+                            data-order="<%= encodeURIComponent(JSON.stringify(order)) %>"
+                            onclick="openOrderDetail(this)" 
+                            title="View details">
+                        <i class="ph ph-eye"></i>
+                    </button>
+                    
+                    <% if(order.status === 'pending') { %>
+                        <div class="actions" id="mobile-actions-<%= order._id %>" style="display:flex; gap:8px;">
+                            <button class="order-action-btn approve mobile-action-btn" data-id="<%= order._id %>" data-status="approved" title="Approve">
+                                <i class="ph ph-check"></i>
+                            </button>
+                            <button class="order-action-btn cancel mobile-action-btn" data-id="<%= order._id %>" data-status="cancelled" title="Cancel">
+                                <i class="ph ph-x"></i>
+                            </button>
+                        </div>
+                    <% } else { %>
+                        <span class="text-muted">-</span>
+                    <% } %>
                 </div>
             </div>
-            <button type="submit" class="btn-primary"><%- t.auth.createAccount %></button>
-        </form>
+            <% }) %>
+        </div>
+    </section>
+
+    <section class="card" style="margin: 0; background: var(--surface-dark); border: 1px dashed var(--glass-border);">
+        <div class="card-header">
+            <h2><i class="ph ph-lightbulb"></i> Future Enhancements</h2>
+        </div>
+        <div style="padding: 15px; color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">
+            <p style="margin-top: 0;">This dedicated space is reserved for features you plan to add later. Suggestions for this area:</p>
+            <ul style="margin-top: 15px; padding-left: 20px; display: flex; flex-direction: column; gap: 12px;">
+                <li>
+                    <strong><i class="ph ph-chart-line-up"></i> Revenue Analytics:</strong> 
+                    Integrate Chart.js to visualize weekly or monthly sales growth.
+                </li>
+                <li>
+                    <strong><i class="ph ph-warning"></i> Low Stock Alerts:</strong> 
+                    Query the database for <code>stockQuantity < 10</code> and list medicines requiring immediate restock.
+                </li>
+                <li>
+                    <strong><i class="ph ph-clock-counter-clockwise"></i> Activity Feed:</strong> 
+                    A log showing recent administrative actions (e.g., "Medicine X updated", "User Y deleted").
+                </li>
+            </ul>
+        </div>
     </section>
 </div>
 
+<div class="modal-backdrop" id="orderDetailModal" style="display:none;">
+    <div class="modal-content" style="max-width: 480px; width: 95%;">
+        <div class="card-header" style="margin-bottom: 1rem;">
+            <h3 style="margin:0;">Order Details</h3>
+        </div>
+        <div id="orderDetailContent"></div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeOrderDetail()">Close</button>
+        </div>
+    </div>
+</div>
+
 <script>
-    // --- 1. Toast Helper Function ---
-    // (Ideally, move this to a shared js file to avoid repetition)
+    // --- FIX: SAFE MODAL DATA PARSING & CSS OVERRIDE ---
+    function openOrderDetail(btn) {
+        try {
+            // Safely parse the hidden order data attached to the button
+            const encodedData = btn.getAttribute('data-order');
+            const order = JSON.parse(decodeURIComponent(encodedData));
+
+            // Extract populated values safely
+            const medicineName = order.medicineId ? order.medicineId.name : '<%= t.adminOrders.deletedMedicine %>';
+            const pharmacyName = order.user ? (order.user.pharmacy || order.user.name) : '<%= t.adminOrders.unknownUser %>';
+            const orderDate = order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-US') : 'N/A';
+
+            const content = document.getElementById('orderDetailContent');
+            content.innerHTML = `
+                <div class="detail-grid">
+                    <p><strong>Medicine</strong> ${medicineName}</p>
+                    <p><strong>Pharmacy</strong> ${pharmacyName}</p>
+                    <p><strong>Date</strong> ${orderDate}</p>
+                    <p><strong>Total</strong> $${order.totalPrice}</p>
+                    <p><strong>Status</strong> <span class="badge ${order.status}">${order.status}</span></p>
+                    <p><strong>ID</strong> <code style="font-size:0.8rem;">${order._id}</code></p>
+                </div>
+                ${order.notes ? `<p><strong>Notes</strong><br/>${order.notes}</p>` : ''}
+            `;
+            
+            // CRITICAL FIX: Explicitly override CSS opacity:0 to make the box visible
+            const modal = document.getElementById('orderDetailModal');
+            const innerBox = modal.querySelector('.modal-content');
+            
+            modal.style.display = 'flex';
+            innerBox.style.display = 'block';
+            innerBox.style.opacity = '1';
+
+        } catch (err) {
+            console.error("Error reading order data", err);
+        }
+    }
+
+    function closeOrderDetail() {
+        const modal = document.getElementById('orderDetailModal');
+        const innerBox = modal.querySelector('.modal-content');
+        
+        modal.style.display = 'none';
+        innerBox.style.display = 'none';
+        innerBox.style.opacity = '0';
+    }
+
+    document.getElementById('orderDetailModal').addEventListener('click', function(e) {
+        if (e.target === this) closeOrderDetail();
+    });
+
+    // --- Toast Helper Function ---
     function showToast(message, type = 'success') {
         const container = document.getElementById('toast-container');
-        // Fallback if container is missing
-        if (!container) return alert(message); 
-
+        if (!container) return alert(message);
         const toast = document.createElement('div');
         const icon = type === 'success' ? '<i class="ph ph-check-circle"></i>' : '<i class="ph ph-warning-circle"></i>';
-        
         toast.className = `toast ${type}`; 
         toast.innerHTML = `${icon} <span>${message}</span>`;
-        
         container.appendChild(toast);
-
-        // Remove after 3 seconds
         setTimeout(() => {
             toast.style.opacity = '0';
             toast.style.transform = 'translateY(-20px)';
@@ -172,93 +428,67 @@
         }, 3000);
     }
 
-    // --- 2. Handle Order Actions (Approve/Cancel) ---
-    document.querySelectorAll('.dashboard-action-btn').forEach(btn => {
-        btn.addEventListener('click', async function() {
-            const id = this.dataset.id;
-            const newStatus = this.dataset.status;
-            
-            // Visual feedback
-            const originalHTML = this.innerHTML;
-            this.innerHTML = '<i class="ph ph-spinner ph-spin"></i>';
-            this.disabled = true;
+    // --- Handle Order Actions (Desktop & Mobile) ---
+    function attachActionListeners(buttonClass, badgePrefix, actionsPrefix) {
+        document.querySelectorAll(buttonClass).forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const id = this.dataset.id;
+                const newStatus = this.dataset.status;
+                
+                const originalHTML = this.innerHTML;
+                this.innerHTML = '<i class="ph ph-spinner ph-spin"></i>';
+                this.disabled = true;
 
-            try {
-                // Call the API endpoint (defined in admin.js exports.updateOrderStatus)
-                const res = await fetch(`/admin/orders/${id}/status`, { 
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ status: newStatus })
-                });
-
-                const result = await res.json();
-
-                if (res.ok) {
-                    showToast(`Order ${newStatus} successfully!`, 'success');
+                try {
+                    const res = await fetch(`/admin/orders/${id}/status`, { 
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: newStatus })
+                    });
                     
-                    // Update UI without reload
-                    const badge = document.getElementById(`status-badge-${id}`);
-                    const actionDiv = document.getElementById(`actions-${id}`);
-                    
-                    if (badge) {
-                        badge.className = `badge ${newStatus}`;
-                        badge.innerText = newStatus;
+                    const result = await res.json();
+                    if (res.ok) {
+                        showToast(`Order ${newStatus} successfully!`, 'success');
+                        
+                        // Update desktop badge and actions
+                        const deskBadge = document.getElementById(`${badgePrefix}-${id}`);
+                        const deskActions = document.getElementById(`${actionsPrefix}-${id}`);
+                        if (deskBadge) {
+                            deskBadge.className = `badge ${newStatus}`;
+                            deskBadge.innerText = newStatus;
+                        }
+                        if (deskActions) {
+                            deskActions.innerHTML = '<span class="text-muted">-</span>';
+                        }
+                        
+                        // Update mobile badge and actions
+                        const mobBadge = document.getElementById(`mobile-${badgePrefix}-${id}`);
+                        const mobActions = document.getElementById(`mobile-${actionsPrefix}-${id}`);
+                        if (mobBadge) {
+                            mobBadge.className = `badge ${newStatus}`;
+                            mobBadge.innerText = newStatus;
+                        }
+                        if (mobActions) {
+                            mobActions.innerHTML = '<span class="text-muted">-</span>';
+                        }
+                    } else {
+                        showToast(result.message || 'Update failed', 'error');
+                        this.innerHTML = originalHTML;
+                        this.disabled = false;
                     }
-                    // Hide buttons since it's no longer pending
-                    if (actionDiv) {
-                        actionDiv.innerHTML = '<span class="text-muted">-</span>';
-                    }
-                } else {
-                    showToast(result.message || 'Update failed', 'error');
+                } catch (err) {
+                    console.error(err);
+                    showToast('Network error', 'error');
                     this.innerHTML = originalHTML;
                     this.disabled = false;
                 }
-            } catch (err) {
-                console.error(err);
-                showToast('Network error', 'error');
-                this.innerHTML = originalHTML;
-                this.disabled = false;
-            }
-        });
-    });
-
-    // --- 3. Handle Create User Form ---
-    document.getElementById('createUserForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const form = e.target;
-        const formData = new FormData(form);
-        const btn = form.querySelector('button[type="submit"]');
-        const originalText = btn.innerText;
-        
-        btn.innerText = 'Creating...';
-        btn.disabled = true;
-
-        try {
-            const response = await fetch('/admin/users', { 
-                method: 'POST',
-                body: formData 
             });
-            
-            const result = await response.json();
+        });
+    }
 
-            if (response.ok) {
-                showToast('User created successfully!', 'success');
-                form.reset();
-                // Optional: Reload after a short delay to see the new count
-                setTimeout(() => window.location.reload(), 1500);
-            } else {
-                showToast(result.message || 'Failed to create user', 'error');
-            }
-        } catch (err) {
-            console.error('Error:', err);
-            showToast('Network error occurred', 'error');
-        } finally {
-            btn.innerText = originalText;
-            btn.disabled = false;
-        }
-    });
+    attachActionListeners('.dashboard-action-btn', 'status-badge', 'actions');
+    attachActionListeners('.mobile-action-btn', 'status-badge', 'actions');
 
-    // Fix for Mobile Modal Position (if you add modals later)
     document.addEventListener("DOMContentLoaded", () => {
         const toastContainer = document.getElementById('toast-container');
         if(toastContainer) document.body.appendChild(toastContainer);

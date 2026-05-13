@@ -1008,6 +1008,92 @@ textarea:focus {
     overflow-x: hidden;
   }
 
+  /* Add this INSIDE your existing @media (max-width: 768px) block */
+
+  .top-header {
+    display: flex;
+    justify-content: flex-start;
+    gap: 15px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 12px;
+  }
+
+  .mobile-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--primary);
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    font-size: 1.5rem;
+  }
+
+  .page-title {
+    font-size: 1.25rem;
+    margin: 0;
+  }
+
+  /* =========================================
+     PHASE 2: MOBILE FORMS, BUTTONS & MODALS
+     ========================================= */
+
+  /* 1. Prevent iOS Auto-Zoom and increase tap areas */
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+    padding: 14px 16px;
+  }
+
+  /* 2. Make main action buttons full-width and taller */
+  .btn-primary,
+  .btn-secondary,
+  .order-btn {
+    width: 100%;
+    padding: 14px 24px;
+    justify-content: center;
+  }
+
+  /* 3. Ensure icon buttons are thumb-friendly (min 44x44) */
+  .btn-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 1.2rem;
+  }
+
+  /* 4. Fix Modals/Dialogs so they don't touch the screen edges */
+  .modal-content,
+  dialog,
+  #deleteModal > div {
+    /* Targets the inline-styled modal */
+    width: 92% !important;
+    padding: 1.5rem !important;
+    margin: 0 auto;
+    border-radius: 16px !important;
+  }
+
+  /* 5. Stack modal action buttons vertically on mobile */
+  .modal-actions,
+  #deleteModal > div > div:last-child {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .modal-actions button,
+  #deleteModal > div > div:last-child button {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  /* 6. Fix Form Groups layout */
+  .form-group {
+    margin-bottom: 1rem;
+    width: 100%;
+  }
+
   .sidebar {
     display: none !important;
   }

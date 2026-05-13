@@ -1,50 +1,55 @@
-<div id="userMoreMenu" class="expanded-menu">
+<div id="adminMoreMenu" class="expanded-menu">
     <div class="menu-grid">
-        <a href="/user/settings" class="menu-item">
+        <a href="/admin/users" class="menu-item <%= page === 'users' ? 'active' : '' %>">
+            <div class="icon-box"><i class="ph ph-users"></i></div>
+            <span><%= t.users %></span>
+        </a>
+        <a href="/admin/requests" class="menu-item <%= page === 'requests' ? 'active' : '' %>">
+            <div class="icon-box"><i class="ph ph-hand-waving"></i></div>
+            <span>Requests</span>
+        </a>
+        <a href="/admin/settings" class="menu-item <%= page === 'settings' ? 'active' : '' %>">
             <div class="icon-box"><i class="ph ph-gear"></i></div>
             <span>Settings</span>
         </a>
-
-        <a href="/user/logout" class="menu-item">
-            <div class="icon-box danger"><i class="ph ph-sign-out"></i></div>
-            <span><%= t.exit %></span>
+        <a href="/admin/ai" class="menu-item <%= page === 'ai' ? 'active' : '' %>">
+            <div class="icon-box"><i class="ph ph-robot"></i></div>
+            <span>AI Analyst</span>
+        </a>
+        <a href="/admin/logout" class="menu-item" style="grid-column: 1 / -1; margin-top: 10px;">
+            <div class="icon-box" style="background: rgba(239, 68, 68, 0.1); color: var(--danger); width: 100%;">
+                <i class="ph ph-sign-out"></i> Logout
+            </div>
         </a>
     </div>
 </div>
 
 <nav class="mobile-bottom-nav">
-    <a href="/user/dashboard" class="nav-item <%= page === 'dashboard' ? 'active' : '' %>">
+    <a href="/admin/dashboard" class="nav-item <%= page === 'dashboard' ? 'active' : '' %>">
         <i class="ph ph-squares-four"></i>
-        <span><%= t.home %></span>
+        <span>Home</span>
     </a>
 
-    <a href="/user/request" class="nav-item <%= page === 'request' ? 'active' : '' %>">
-        <div class="fab">
-            <i class="ph ph-plus"></i>
-        </div>
-        <span><%= t.request %></span>
+    <a href="/admin/medicines" class="nav-item <%= page === 'medicines' ? 'active' : '' %>">
+        <i class="ph ph-flask"></i>
+        <span>Medicines</span>
     </a>
 
-    <a href="/user/my-requests" class="nav-item <%= page === 'my-requests' ? 'active' : '' %>">
-        <i class="ph ph-notebook"></i>
-        <span><%= t.my_requests %></span>
-    </a>
-
-    <a href="/user/orders" class="nav-item <%= page === 'orders' ? 'active' : '' %>">
+    <a href="/admin/orders" class="nav-item <%= page === 'orders' ? 'active' : '' %>">
         <i class="ph ph-package"></i>
-        <span><%= t.orders %></span>
+        <span>Orders</span>
     </a>
 
-    <button class="nav-item" onclick="toggleUserMenu()" style="background:var(--bg-dark); border:none; color: inherit; font-family: inherit;">
-        <i class="ph ph-dots-three-circle" id="userMoreIcon"></i>
+    <button class="nav-item" onclick="toggleAdminMenu()" style="background:transparent; border:none; color: inherit; padding: 0; cursor: pointer;">
+        <i class="ph ph-dots-three-circle" id="adminMoreIcon"></i>
         <span>More</span>
     </button>
 </nav>
 
 <script>
-    function toggleUserMenu() {
-        const menu = document.getElementById('userMoreMenu');
-        const icon = document.getElementById('userMoreIcon');
+    function toggleAdminMenu() {
+        const menu = document.getElementById('adminMoreMenu');
+        const icon = document.getElementById('adminMoreIcon');
         
         menu.classList.toggle('active');
         
@@ -59,11 +64,11 @@
 
     // Close menu when clicking outside
     document.addEventListener('click', (e) => {
-        const menu = document.getElementById('userMoreMenu');
-        const btn = document.querySelector('button[onclick="toggleUserMenu()"]');
+        const menu = document.getElementById('adminMoreMenu');
+        const btn = document.querySelector('button[onclick="toggleAdminMenu()"]');
         
         if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target) && menu.classList.contains('active')) {
-            toggleUserMenu();
+            toggleAdminMenu();
         }
     });
 </script>

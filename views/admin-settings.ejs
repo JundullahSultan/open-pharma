@@ -1,53 +1,231 @@
 <%- include('partials/admin-header') %>
 
-<section class="card" style="max-width: 600px; margin: 0 auto;">
-    <div class="card-header">
-        <h2><i class="ph ph-gear"></i> <%= t.settings.title %></h2>
-    </div>
+<style>
+    .settings-card {
+        max-width: 520px;
+        margin: 0 auto;
+    }
 
-    <div style="padding: 20px; border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; gap: 20px;">
-        <div class="avatar" style="width: 80px; height: 80px; font-size: 2rem;">
+    .profile-row {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 24px;
+        border-bottom: 1px solid var(--glass-border);
+    }
+    .profile-avatar {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: white;
+        flex-shrink: 0;
+        overflow: hidden;
+        border: 2px solid var(--glass-border);
+    }
+    .profile-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .setting-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--glass-border);
+        gap: 20px;
+    }
+    .setting-row:last-of-type {
+        border-bottom: none;
+    }
+    .setting-info h4 {
+        margin: 0 0 4px;
+        font-size: 1rem;
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .setting-info p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+
+    /* Theme toggle button */
+    .theme-toggle-btn {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        border: 1px solid var(--glass-border);
+        background: var(--surface-dark);
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background var(--transition-fast), border-color var(--transition-fast);
+        font-size: 1.3rem;
+    }
+    .theme-toggle-btn:hover {
+        background: var(--surface-light);
+        border-color: var(--primary);
+    }
+
+    /* Language segmented control */
+    .lang-segmented {
+        display: flex;
+        border: 1px solid var(--glass-border);
+        border-radius: 12px;
+        overflow: hidden;
+        background: var(--surface-dark);
+    }
+    .lang-segmented a {
+        padding: 10px 18px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        color: var(--text-muted);
+        transition: background var(--transition-fast), color var(--transition-fast);
+        white-space: nowrap;
+        text-align: center;
+        flex: 1;
+        position: relative;
+    }
+    .lang-segmented a:not(:last-child) {
+        border-right: 1px solid var(--glass-border);
+    }
+    .lang-segmented a.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+    .lang-segmented a:hover:not(.active) {
+        background: rgba(255,255,255,0.04);
+        color: var(--text-main);
+    }
+
+    /* Logout link */
+    .logout-section {
+        padding: 18px 24px;
+        border-top: 1px solid var(--glass-border);
+    }
+    .logout-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid var(--danger);
+        background: transparent;
+        color: var(--danger);
+        font-weight: 600;
+        cursor: pointer;
+        transition: background var(--transition-fast), color var(--transition-fast);
+        font-family: inherit;
+        font-size: 1rem;
+    }
+    .logout-btn:hover {
+        background: var(--danger);
+        color: white;
+    }
+
+    @media (max-width: 500px) {
+        .profile-row { padding: 18px; }
+        .setting-row { flex-direction: column; align-items: flex-start; gap: 14px; }
+        .lang-segmented { width: 100%; }
+        .lang-segmented a { padding: 10px 14px; }
+    }
+</style>
+
+<section class="card settings-card">
+    <!-- Profile Header -->
+    <div class="profile-row">
+        <div class="profile-avatar">
             <% if (user && user.imageURL) { %>
-                <img src="<%= user.imageURL %>" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                <img src="<%= user.imageURL %>" alt="Profile">
             <% } else { %>
                 <%= (typeof adminName !== 'undefined' && adminName) ? adminName[0].toUpperCase() : 'A' %>
             <% } %>
         </div>
         <div>
-            <h3 style="margin-bottom: 5px;"><%= typeof adminName !== 'undefined' ? adminName : t.settings.role %></h3>
-            <span class="badge approved"><%= t.settings.role %></span>
+            <h3 style="margin: 0 0 4px;"><%= typeof adminName !== 'undefined' ? adminName : 'Admin' %></h3>
+            <span class="badge approved" style="font-size:0.8rem;"><%= t.settings.role %></span>
         </div>
     </div>
 
-    <div style="padding: 20px; display: flex; align-items: center; justify-content: space-between;">
-        <div>
-            <h4 style="margin-bottom: 5px;"><i class="ph ph-paint-brush"></i> <%= t.settings.appearance %></h4>
-            <p style="color: var(--text-muted); font-size: 0.9rem;"><%= t.settings.appearanceDesc %></p>
+    <!-- Appearance Setting -->
+    <div class="setting-row">
+        <div class="setting-info">
+            <h4><i class="ph ph-paint-brush"></i> <%= t.settings.appearance %></h4>
+            <p><%= t.settings.appearanceDesc %></p>
         </div>
-        
-        <button id="themeToggle" class="btn-icon" style="width: 50px; height: 50px; border-radius: 50%; background: var(--surface-light); color: var(--text-main); font-size: 1.5rem;">
+        <button id="themeToggle" class="theme-toggle-btn" title="Toggle theme">
             <i class="ph ph-moon" id="themeIcon"></i>
         </button>
     </div>
 
-    <div style="padding: 20px; border-top: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: space-between;">
-        <div>
-            <h4 style="margin-bottom: 5px;"><i class="ph ph-globe"></i> <%= t.settings.language %></h4>
-            <p style="color: var(--text-muted); font-size: 0.9rem;"><%= t.settings.languageDesc %></p>
+    <!-- Language Setting -->
+    <div class="setting-row">
+        <div class="setting-info">
+            <h4><i class="ph ph-globe"></i> <%= t.settings.language %></h4>
+            <p><%= t.settings.languageDesc %></p>
         </div>
-
-        <div class="lang-toggle-group">
+        <div class="lang-segmented">
             <a href="/lang/en" class="<%= lang === 'en' ? 'active' : '' %>">EN</a>
             <a href="/lang/fa" class="<%= lang === 'fa' ? 'active' : '' %>">فا</a>
             <a href="/lang/ps" class="<%= lang === 'ps' ? 'active' : '' %>">پښ</a>
         </div>
     </div>
 
-    <div style="padding: 20px; border-top: 1px solid var(--glass-border);">
-        <a href="/admin/logout" class="btn-text" style="color: var(--danger); width: 100%; text-align: center; display: block; padding: 10px;">
+    <!-- Logout -->
+    <div class="logout-section">
+        <a href="/admin/logout" class="logout-btn">
             <i class="ph ph-sign-out"></i> <%= t.settings.logout %>
         </a>
     </div>
 </section>
+
+<script>
+    (function() {
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const html = document.documentElement;
+
+        function updateIcon() {
+            const isLight = html.getAttribute('data-theme') === 'light';
+            themeIcon.className = isLight ? 'ph ph-sun' : 'ph ph-moon';
+        }
+
+        // Init icon
+        updateIcon();
+
+        themeToggle.addEventListener('click', () => {
+            const current = html.getAttribute('data-theme');
+            const next = current === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+            updateIcon();
+        });
+
+        // Listen for storage changes (if another tab changes it)
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'theme') {
+                const newTheme = e.newValue || 'dark';
+                html.setAttribute('data-theme', newTheme);
+                updateIcon();
+            }
+        });
+    })();
+</script>
 
 <%- include('partials/admin-footer', { page: 'settings' }) %>
