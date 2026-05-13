@@ -5,9 +5,9 @@ const multer = require("multer");
 
 // 1. Configure Cloudinary
 cloudinary.config({
-  cloud_name: "dirvrzga7",
-  api_key: "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",
-  api_secret: "Gu2I2bwiGQdG6xa5H8jQrerkg2o",
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
 // 2. Configure Storage Settings
