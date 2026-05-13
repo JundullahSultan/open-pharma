@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shahi Pharma | Revolutionizing B2B Pharmacy</title>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=SUSE:wght@100..900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles/admin-style.css" />
+  </head>
+  <body style="font-family: 'SUSE', var(--font-en);">
+    
+    <nav class="landing-nav">
+      <a href="/" class="nav-logo">
+        <i class="ph ph-pill"></i>
+        <span>Shahi Pharma</span>
+      </a>
+
+      <div class="nav-center">
+        <a href="/">Home</a>
+        <a href="/products">Products</a>
+        <a href="/about">About</a>
+        <a href="/contact">Contact</a>
+      </div>
+
+      <div class="nav-actions">
+        <div class="lang-switch">
+          <a href="?lang=en" class="active">EN</a>
+          <a href="?lang=fa">FA</a>
+          <a href="?lang=ps">PS</a>
+        </div>
+        
+        <a href="/user/login" class="btn-text">Log in</a>
+        <a href="/user/signup" class="btn-primary">Sign up</a>
+      </div>
+    </nav>
+
+    <main class="hero">
+      <div class="hero-content">
+        <h1>Revolutionizing<br>B2B Pharmacy</h1>
+        <p>
+          Your trusted partner for wholesale pharmaceuticals. Streamline your 
+          inventory, manage orders efficiently, and grow your business with 
+          Shahi Pharma.
+        </p>
+        <div class="hero-btns">
+          <a href="/user/login" class="btn-primary-lg">Get Started</a>
+          <a href="/products" class="btn-glass">Browse Products</a>
+        </div>
+      </div>
+    </main>
+
+    <button id="theme-toggle" class="floating-theme-btn" aria-label="Toggle Theme">
+      <i class="ph ph-moon" id="icon-moon"></i>
+      <i class="ph ph-sun" id="icon-sun"></i>
+    </button>
+
+    <script>
+      const themeToggle = document.getElementById('theme-toggle');
+      
+      // 1. Check local storage for saved theme (default to dark)
+      const currentTheme = localStorage.getItem('shahi_theme') || 'dark';
+      
+      // 2. Apply theme on initial load
+      if (currentTheme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+
+      // 3. Listen for clicks to toggle
+      themeToggle.addEventListener('click', () => {
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        
+        if (isLight) {
+          // Switch to Dark
+          document.documentElement.removeAttribute('data-theme');
+          localStorage.setItem('shahi_theme', 'dark');
+        } else {
+          // Switch to Light
+          document.documentElement.setAttribute('data-theme', 'light');
+          localStorage.setItem('shahi_theme', 'light');
+        }
+      });
+    </script>
+
+    </body>
+</html>
