@@ -1,225 +1,387 @@
 <%- include('partials/admin-header', {title: t.adminRequests.title, page: 'requests'}) %>
 
-<section class="card">
-    <div class="card-header customer-card-header">
-        <h2><%= t.adminRequests.title %></h2>
-        <div class="toolbar">
-            <div class="search-bar">
-                <i class="ph ph-magnifying-glass"></i>
-                <input type="text" id="searchInput" placeholder="<%= t.adminRequests.searchPlaceholder %>">
-            </div>
-        </div>
-  
+<style>
+    /* ===== Search Bar ===== */
+    .toolbar { margin-bottom: 15px; }
+    .search-bar {
+        display: flex; align-items: center; background: var(--surface-dark);
+        border: 1px solid var(--glass-border); border-radius: 10px;
+        padding: 10px 16px; gap: 12px; max-width: 450px;
+        transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    }
+    .search-bar:focus-within {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(59,130,246,0.15);
+    }
+    .search-bar i { color: var(--text-muted); font-size: 1.2rem; }
+    .search-bar:focus-within i { color: var(--primary); }
+    .search-bar input {
+        border: none; background: transparent; color: var(--text-main);
+        outline: none; width: 100%; font-size: 0.95rem; font-family: inherit;
+    }
+    .search-bar input::placeholder { color: var(--text-muted); }
+
+    /* ===== Requests Grid ===== */
+    .requests-grid {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;
+    }
+
+    .request-card {
+        background: var(--surface-dark); border: 1px solid var(--glass-border);
+        border-radius: 12px; padding: 14px; display: flex; flex-direction: column;
+        gap: 10px; box-shadow: var(--shadow-sm);
+        transition: box-shadow var(--transition-fast), transform var(--transition-fast), border-color var(--transition-fast);
+    }
+    .request-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+    .request-card.highlight { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
+
+    .request-card-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .request-card-medicine { font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+    .request-card-company { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .request-card-qty { font-weight: 700; color: var(--text-main); white-space: nowrap; }
+
+    .request-card-middle { display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 0.85rem; }
+    .request-card-user { display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+
+    .request-card-actions { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    
+    .eye-btn, .action-btn {
+        width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--glass-border);
+        background: transparent; display: flex; align-items: center; justify-content: center;
+        cursor: pointer; transition: all var(--transition-fast);
+    }
+    .eye-btn { color: var(--text-muted); }
+    .eye-btn:hover { color: var(--primary); background: rgba(59,130,246,0.1); border-color: var(--primary); }
+    
+    .action-btn.approve { color: var(--success); border-color: var(--success); }
+    .action-btn.approve:hover { background: var(--success); color: white; }
+    
+    .action-btn.reject { color: var(--danger); border-color: var(--danger); }
+    .action-btn.reject:hover { background: var(--danger); color: white; }
+    
+    .delete-req-btn {
+        background: transparent; border: 1px solid var(--danger); color: var(--danger);
+        padding: 6px 14px; border-radius: 8px; cursor: pointer; font-weight: 600;
+        font-size: 0.85rem; display: flex; align-items: center; gap: 6px; transition: all var(--transition-fast);
+    }
+    .delete-req-btn:hover { background: var(--danger); color: white; }
+</style>
+
+<div class="toolbar">
+    <div class="search-bar">
+        <i class="ph ph-magnifying-glass"></i>
+        <input type="text" id="searchInput" placeholder="<%= t.adminRequests.searchPlaceholder || 'Search requests...' %>">
     </div>
+</div>
 
-    <div class="sheet-container">
-        <table class="sheet-table">
-            <thead>
-                <tr>
-                    <th><%= t.adminRequests.user %></th>
-                    <th><%= t.adminRequests.medicine %></th>
-                 
-                    <th><%= t.adminRequests.qty %></th>
-                    <th><%= t.common.date %></th>
-                    <th><%= t.common.status %></th>
-                    <th><%= t.common.actions %></th>
-                </tr>
-            </thead>
-         
-            <tbody>
-                <% if (requests.length > 0) { %>
-                    <% requests.forEach(req => { %>
-                        <tr id="row-<%= req._id %>">
-                        
-                            <td class="readonly-cell">
-                                <div class="user-info">
-                                    <div class="avatar-sm"><%= req.user ? req.user.name[0] : '?' %></div>
-                                    <span><%= req.user ? req.user.name : t.adminOrders.unknownUser %></span>
-                                </div>
-                            </td>
-                            <td class="readonly-cell">
-         
-                                <strong><%= req.medicineName %></strong>
-                                <div style="font-size: 0.8rem; color: var(--text-muted);"><%= req.companyName %></div>
-                            </td>
-         
-                            <td class="readonly-cell"><%= req.quantity %></td>
-                            <td class="readonly-cell"><%= new Date(req.createdAt).toLocaleDateString() %></td>
-                            <td class="readonly-cell">
+<section class="card" style="margin: 0;">
+    <div class="card-header">
+        <h2><%= t.adminRequests.title %></h2>
+    </div>
+    <div class="requests-grid" id="requestsGrid">
+        <% if (requests.length > 0) { %>
+            <% requests.forEach(req => { %>
+            <div class="request-card" id="req-<%= req._id %>" 
+                 data-search-text="<%= req.medicineName.toLowerCase() %> <%= req.companyName.toLowerCase() %> <%= req.user?.name?.toLowerCase() || '' %> <%= req.status.toLowerCase() %> <%= req.quantity %>">
+                <div class="request-card-top">
+                    <div>
+                        <div class="request-card-medicine"><%= req.medicineName %></div>
+                        <div class="request-card-company"><%= req.companyName %></div>
+                    </div>
+                    <span class="request-card-qty">x<%= req.quantity %></span>
+                </div>
+                <div class="request-card-middle">
+                    <div class="request-card-user">
+                        <i class="ph ph-user"></i>
+                        <span><%= req.user ? req.user.name : (t.adminOrders.unknownUser || 'Unknown') %></span>
+                    </div>
+                    <span class="badge <%= req.status.toLowerCase() %>" id="badge-<%= req._id %>">
+                        <%= req.status.toLowerCase() === 'approved' ? (t.adminDashboard.approved || 'Approved') : (req.status.toLowerCase() === 'rejected' ? (t.adminDashboard.cancelled || 'Rejected') : (t.adminDashboard.pending || 'Pending')) %>
+                    </span>
+                </div>
+                <div class="request-card-actions">
+                    <button class="eye-btn" 
+                        data-medicine="<%= req.medicineName || '' %>"
+                        data-company="<%= req.companyName || '' %>"
+                        data-shape="<%= req.shapeAndDose || '' %>"
+                        data-trade="<%= req.tradeName || '' %>"
+                        data-scientific="<%= req.scientificName || '' %>"
+                        data-desc="<%= req.description || '' %>"
+                        onclick="openDetailsModal(this)" title="View details">
+                        <i class="ph ph-eye"></i>
+                    </button>
                     
-                                <span class="badge <%= req.status.toLowerCase() %>"><%= req.status %></span>
-                            </td>
-                            <td class="readonly-cell">
-                          
-                                <div class="actions">
-                                    <button class="btn-icon btn-request-details" onclick="openDetails('<%= JSON.stringify(req) %>')">
-                                        <i class="ph ph-eye"></i>
-                                    </button>
-
-                                    <button class="btn-icon delete-btn delete-request-btn" data-id="<%= req._id %>" title="Delete Request">
-                                        <i class="ph ph-trash"></i>
-                                    </button>
-
-                                    <% if (req.status === 'pending') { %>
-                                 
-                                        <button class="btn-icon approve" onclick="updateStatus('<%= req._id %>', 'approved')">
-                                            <i class="ph ph-check"></i>
-                                        </button>
- 
-                                        <button class="btn-icon cancel" onclick="updateStatus('<%= req._id %>', 'rejected')">
-                                            <i class="ph ph-x"></i>
-         
-                                        </button>
-                                    <% } %>
-                               
-                                </div>
-                            </td>
-                        </tr>
-                    <% }) %>
-                <% } else { %>
-     
-                    <tr><td class="readonly-cell" colspan="6" style="text-align: center; padding: 2rem;"><%= t.userRequest.noRequests %></td></tr>
-                <% } %>
-            </tbody>
-        </table>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button class="delete-req-btn" data-id="<%= req._id %>" title="Delete Request" onclick="openDeleteModal('<%= req._id %>')">
+                            <i class="ph ph-trash"></i>
+                        </button>
+                        <% if (req.status === 'pending') { %>
+                            <button class="action-btn approve" onclick="openActionModal('<%= req._id %>', 'approved')" title="Approve">
+                                <i class="ph ph-check"></i>
+                            </button>
+                            <button class="action-btn reject" onclick="openActionModal('<%= req._id %>', 'rejected')" title="Reject">
+                                <i class="ph ph-x"></i>
+                            </button>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+            <% }) %>
+        <% } else { %>
+            <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted);">
+                <i class="ph ph-hand-waving" style="font-size: 3rem; margin-bottom: 10px;"></i>
+                <p><%= t.userRequest.noRequests || 'No requests found.' %></p>
+            </div>
+        <% } %>
     </div>
 </section>
 
-<dialog id="detailsModal" class="custom-modal">
-    <div class="modal-content" style="max-width: 500px;">
-        <div class="card-header">
-            <h2 id="modalTitle"><%= t.adminRequests.modalTitle %></h2>
-            <button onclick="document.getElementById('detailsModal').close()" class="btn-text"><i class="ph ph-x"></i></button>
-       
+<div class="modal-backdrop" id="detailsModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px);">
+    <div class="modal-content" style="background: var(--surface); border-radius: 12px; padding: 24px; width: 100%; max-width: 550px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--glass-border); padding-bottom: 15px;">
+            <h2 style="margin: 0; color: var(--text-main);"><%= t.adminRequests.modalTitle || 'Request Details' %></h2>
+            <button onclick="closeModal('detailsModal')" style="background: transparent; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);"><i class="ph ph-x"></i></button>
         </div>
-        <div id="modalBody" style="display: grid; gap: 1rem;">
+        <div id="modalBody" style="display: flex; flex-direction: column; gap: 16px;">
             </div>
-    </div>
-</dialog>
-
-<div id="toast-container"></div>
-
-<div id="deleteRequestModal" class="custom-backdrop">
-    <div class="modal-content confirmation-box">
-        <div class="icon-box danger large">
-            <i class="ph ph-trash"></i>
-        </div>
-        <h3><%= t.common.delete %>?</h3>
-        <p><%= t.adminRequests.deleteConfirmMessage || "Are you sure you want to permanently delete this request?" %></p>
-        
-        <div class="modal-actions">
-            <button class="btn-cancel" onclick="closeDeleteModal()"><%= t.common.cancel %></button>
-            <button class="btn-delete" id="confirmReqDeleteBtn"><%= t.common.delete %></button>
+        <div class="modal-actions" style="margin-top: 24px; display: flex; justify-content: flex-end;">
+            <button class="btn-cancel" style="padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 500;" onclick="closeModal('detailsModal')"><%= t.common.close || 'Close' %></button>
         </div>
     </div>
 </div>
 
+<div class="modal-backdrop" id="actionConfirmModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px);">
+    <div class="modal-content" style="background: var(--surface); border-radius: 12px; padding: 24px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <div id="actionModalIcon" style="width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 16px;">
+            <i id="actionIcon" class="ph ph-question"></i>
+        </div>
+        <h3 id="actionModalTitle" style="margin: 0 0 10px; color: var(--text-main); font-size: 1.3rem;">Confirm Action</h3>
+        <p id="actionModalText" style="margin: 0 0 24px; color: var(--text-muted); font-size: 0.95rem; line-height: 1.5;">Are you sure you want to proceed?</p>
+        <div class="modal-actions" style="display: flex; gap: 12px; justify-content: center;">
+            <button class="btn-cancel" style="flex: 1; padding: 12px; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 600;" onclick="closeModal('actionConfirmModal')"><%= t.common.cancel || 'Cancel' %></button>
+            <button id="confirmActionBtn" class="btn-primary" style="flex: 1; padding: 12px; border-radius: 8px; border: none; color: white; cursor: pointer; font-family: inherit; font-weight: 600;">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-backdrop" id="deleteRequestModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px);">
+    <div class="modal-content" style="background: var(--surface); border-radius: 12px; padding: 24px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(239, 68, 68, 0.1); color: var(--danger); display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 16px;">
+            <i class="ph ph-trash"></i>
+        </div>
+        <h3 style="margin: 0 0 10px; color: var(--text-main); font-size: 1.3rem;"><%= t.common.delete || 'Delete Request' %>?</h3>
+        <p style="margin: 0 0 24px; color: var(--text-muted); font-size: 0.95rem; line-height: 1.5;">
+            <%= t.adminRequests.deleteConfirmMessage || "Are you sure you want to permanently delete this request? This action cannot be undone." %>
+        </p>
+        <div class="modal-actions" style="display: flex; gap: 12px; justify-content: center;">
+            <button class="btn-cancel" style="flex: 1; padding: 12px; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 600;" onclick="closeModal('deleteRequestModal')"><%= t.common.cancel || 'Cancel' %></button>
+            <button id="confirmReqDeleteBtn" class="btn-primary" style="flex: 1; padding: 12px; border-radius: 8px; background: var(--danger); border-color: var(--danger); color: white; cursor: pointer; font-family: inherit; font-weight: 600;"><%= t.common.delete || 'Yes, Delete' %></button>
+        </div>
+    </div>
+</div>
+
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px;"></div>
+
 <script>
-    // --- CRITICAL FIX: Move Modal to Body ---
-    document.addEventListener("DOMContentLoaded", () => {
-        const modal = document.getElementById('deleteRequestModal');
-        const detailsModal = document.getElementById('detailsModal'); // Also move the details modal!
-        const toastContainer = document.getElementById('toast-container');
-        
-        if(modal) document.body.appendChild(modal);
-        if(detailsModal) document.body.appendChild(detailsModal);
-        if(toastContainer) document.body.appendChild(toastContainer);
+    // ----- Universal Modal Closer -----
+    document.querySelectorAll('.modal-backdrop').forEach(overlay => {
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closeModal(overlay.id);
+        });
     });
 
+    window.closeModal = function(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+        if (modalId === 'actionConfirmModal') pendingAction = null;
+        if (modalId === 'deleteRequestModal') requestIdToDelete = null;
+    };
+
+    // ----- Search Functionality -----
+    const searchInput = document.getElementById('searchInput');
+    const requestCards = document.querySelectorAll('.request-card');
+
+    if(searchInput) {
+        searchInput.addEventListener('input', function() {
+            const term = this.value.toLowerCase().trim();
+            requestCards.forEach(card => {
+                const searchText = card.dataset.searchText || '';
+                const matches = !term || searchText.includes(term);
+                card.style.display = matches ? 'flex' : 'none';
+                if (matches && term) {
+                    card.classList.add('highlight');
+                } else {
+                    card.classList.remove('highlight');
+                }
+            });
+        });
+    }
+
+    // ----- Toast Notifications -----
     function showToast(message, type = 'success') {
-        const container = document.getElementById('toast-container');
+        const toastContainer = document.getElementById('toast-container');
         const toast = document.createElement('div');
+        
         const icon = type === 'success' ? '<i class="ph ph-check-circle"></i>' : '<i class="ph ph-warning-circle"></i>';
-        toast.className = `toast ${type}`; 
+        const borderColor = type === 'success' ? 'var(--success)' : 'var(--danger)';
+        
+        toast.style.cssText = `
+            background: var(--surface-dark); border-left: 4px solid ${borderColor};
+            color: var(--text-main); padding: 14px 20px; border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 12px;
+            transition: all 0.3s ease; opacity: 0; transform: translateX(50px); font-weight: 500; font-size: 0.95rem;
+        `;
+        
         toast.innerHTML = `${icon} <span>${message}</span>`;
-        container.appendChild(toast);
+        toastContainer.appendChild(toast);
+        
+        requestAnimationFrame(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateX(0)';
+        });
+
         setTimeout(() => {
             toast.style.opacity = '0';
-            toast.style.transform = 'translateY(-20px)';
+            toast.style.transform = 'translateX(50px)';
             setTimeout(() => toast.remove(), 300);
         }, 3000);
     }
 
-    // [Keep your updateStatus function here...]
-    async function updateStatus(id, status) {
-        // ... (same as previous code) ...
-        // Re-paste logic if needed, omitted for brevity
-        let msg = status === 'approved' ? 
-            "<%= t.adminRequests.confirmApprove %>" : 
-            "<%= t.adminRequests.confirmReject %>";
-        if(!confirm(msg)) return;
+    // ----- 1. Details Modal Logic (Eye Icon) -----
+    window.openDetailsModal = function(btn) {
+        const medicine = btn.getAttribute('data-medicine') || '-';
+        const company = btn.getAttribute('data-company') || '-';
+        const shape = btn.getAttribute('data-shape') || '-';
+        const trade = btn.getAttribute('data-trade') || '-';
+        const scientific = btn.getAttribute('data-scientific') || '-';
+        const desc = btn.getAttribute('data-desc') || <%- JSON.stringify(t.adminRequests.noDescription || "No description provided") %>;
+        
+        const body = document.getElementById('modalBody');
+        
+        // BUG FIX: We safely inject the translation titles using JSON.stringify to prevent script breaking
+        body.innerHTML = `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: var(--surface-dark); padding: 16px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                <div><strong style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing: 0.5px;">${<%- JSON.stringify(t.adminRequests.medicine || 'Medicine') %>}</strong><br> <span style="font-weight:600; color:var(--text-main);">${medicine}</span></div>
+                <div><strong style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing: 0.5px;">${<%- JSON.stringify(t.adminMedicines.company || 'Company') %>}</strong><br> <span style="font-weight:600; color:var(--text-main);">${company}</span></div>
+                <div><strong style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing: 0.5px;">${<%- JSON.stringify(t.adminRequests.shapeDose || 'Shape & Dose') %>}</strong><br> <span style="font-weight:600; color:var(--text-main);">${shape}</span></div>
+                <div><strong style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing: 0.5px;">${<%- JSON.stringify(t.userRequest.tradeName || 'Trade Name') %>}</strong><br> <span style="font-weight:600; color:var(--text-main);">${trade}</span></div>
+                <div style="grid-column: 1 / -1;"><strong style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing: 0.5px;">${<%- JSON.stringify(t.userRequest.scientificName || 'Scientific Name') %>}</strong><br> <span style="font-weight:600; color:var(--text-main);">${scientific}</span></div>
+            </div>
+            <div>
+                <strong style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing: 0.5px;">${<%- JSON.stringify(t.userRequest.description || 'Description') %>}</strong>
+                <div style="margin-top:6px; background: var(--surface-dark); border: 1px solid var(--glass-border); padding:16px; border-radius:12px; line-height: 1.6; color:var(--text-main);">
+                    ${desc}
+                </div>
+            </div>
+        `;
+        document.getElementById('detailsModal').style.display = 'flex';
+    };
 
+    // ----- 2. Approve/Reject Logic & Custom Modal -----
+    let pendingAction = null;
+
+    window.openActionModal = function(id, status) {
+        pendingAction = { id, status };
+        
+        const modal = document.getElementById('actionConfirmModal');
+        const title = document.getElementById('actionModalTitle');
+        const text = document.getElementById('actionModalText');
+        const iconBox = document.getElementById('actionModalIcon');
+        const icon = document.getElementById('actionIcon');
+        const confirmBtn = document.getElementById('confirmActionBtn');
+        
+        // Using JSON.stringify ensures zero syntax errors if a translation has an apostrophe or double quote
+        if (status === 'approved') {
+            title.innerText = <%- JSON.stringify(t.adminRequests.approveTitle || "Approve Request?") %>;
+            text.innerText = <%- JSON.stringify(t.adminRequests.approveConfirm || "Are you sure you want to approve this request? The user will be notified.") %>;
+            iconBox.style.background = 'rgba(34, 197, 94, 0.1)';
+            iconBox.style.color = 'var(--success)';
+            icon.className = 'ph ph-check-circle';
+            confirmBtn.style.background = 'var(--success)';
+            confirmBtn.style.borderColor = 'var(--success)';
+            confirmBtn.innerHTML = '<i class="ph ph-check"></i> Yes, Approve';
+        } else {
+            title.innerText = <%- JSON.stringify(t.adminRequests.rejectTitle || "Reject Request?") %>;
+            text.innerText = <%- JSON.stringify(t.adminRequests.rejectConfirm || "Are you sure you want to reject this request?") %>;
+            iconBox.style.background = 'rgba(239, 68, 68, 0.1)';
+            iconBox.style.color = 'var(--danger)';
+            icon.className = 'ph ph-x-circle';
+            confirmBtn.style.background = 'var(--danger)';
+            confirmBtn.style.borderColor = 'var(--danger)';
+            confirmBtn.innerHTML = '<i class="ph ph-x"></i> Yes, Reject';
+        }
+        
+        modal.style.display = 'flex';
+    };
+
+    document.getElementById('confirmActionBtn').addEventListener('click', async function() {
+        if (!pendingAction) return;
+        
+        const { id, status } = pendingAction;
+        const btn = this;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="ph ph-spinner ph-spin"></i> Processing...';
+        btn.disabled = true;
+        
         try {
             const res = await fetch(`/admin/requests/${id}/status`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status })
             });
+            
             if (res.ok) {
+                const badge = document.getElementById(`badge-${id}`);
+                if (badge) {
+                    badge.className = `badge ${status}`;
+                    badge.innerText = status === 'approved' ? <%- JSON.stringify(t.adminDashboard.approved || 'Approved') %> : <%- JSON.stringify(t.adminDashboard.cancelled || 'Rejected') %>;
+                }
+                
+                const card = document.getElementById(`req-${id}`);
+                if (card) {
+                    const actionsDiv = card.querySelector('.request-card-actions > div:last-child');
+                    if (actionsDiv) {
+                        const approveBtn = actionsDiv.querySelector('.action-btn.approve');
+                        const rejectBtn = actionsDiv.querySelector('.action-btn.reject');
+                        if(approveBtn) approveBtn.remove();
+                        if(rejectBtn) rejectBtn.remove();
+                    }
+                }
                 showToast(`Request ${status} successfully`, 'success');
-                setTimeout(() => location.reload(), 1000); 
             } else {
-                showToast('<%= t.adminRequests.errorUpdate %>', 'error');
+                showToast(<%- JSON.stringify(t.adminRequests.errorUpdate || "Error updating status") %>, 'error');
             }
         } catch (err) {
-            showToast('<%= t.adminRequests.networkError %>', 'error');
+            console.error(err);
+            showToast(<%- JSON.stringify(t.adminRequests.networkError || "Network Error") %>, 'error');
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            closeModal('actionConfirmModal');
         }
-    }
+    });
 
-    // [Keep your openDetails function here...]
-    function openDetails(reqString) {
-        const req = JSON.parse(reqString);
-        const modal = document.getElementById('detailsModal');
-        const body = document.getElementById('modalBody');
-        // ... fill body innerHTML ...
-        body.innerHTML = `
-            <div class="detail-row"><strong><%= t.adminRequests.medicine %>:</strong> ${req.medicineName}</div>
-            <div class="detail-row"><strong><%= t.adminMedicines.company %>:</strong> ${req.companyName}</div>
-            <div class="detail-row"><strong><%= t.adminRequests.shapeDose %>:</strong> ${req.shapeAndDose}</div>
-            <div class="detail-row"><strong><%= t.userRequest.tradeName %>:</strong> ${req.tradeName || '-'}</div>
-            <div class="detail-row"><strong><%= t.userRequest.scientificName %>:</strong> ${req.scientificName || '-'}</div>
-            <div class="detail-row"><strong><%= t.userRequest.description %>:</strong> <p style="margin-top:5px; background:rgba(0,0,0,0.2); padding:10px; border-radius:8px;">${req.description || '<%= t.adminRequests.noDescription %>'}</p></div>
-        `;
-        modal.showModal();
-    }
-
-    // --- Delete Modal Logic ---
-    const deleteModal = document.getElementById('deleteRequestModal');
-    const confirmBtn = document.getElementById('confirmReqDeleteBtn');
+    // ----- 3. Delete Request Logic & Custom Modal -----
     let requestIdToDelete = null;
 
-    function openDeleteModal(id) {
+    window.openDeleteModal = function(id) {
         requestIdToDelete = id;
-        deleteModal.classList.add('active');
-    }
+        document.getElementById('deleteRequestModal').style.display = 'flex';
+    };
 
-    function closeDeleteModal() {
-        requestIdToDelete = null;
-        deleteModal.classList.remove('active');
-    }
-
-    deleteModal.addEventListener('click', (e) => {
-        if(e.target === deleteModal) closeDeleteModal();
-    });
-
-    document.querySelectorAll('.delete-request-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation(); 
-            openDeleteModal(btn.dataset.id);
-        });
-    });
-
-    confirmBtn.addEventListener('click', async () => {
+    document.getElementById('confirmReqDeleteBtn').addEventListener('click', async function() {
         if (!requestIdToDelete) return;
-        confirmBtn.innerText = '...';
+        
+        const btn = this; 
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="ph ph-spinner ph-spin"></i> Deleting...';
+        btn.disabled = true;
+        
         try {
             const res = await fetch(`/admin/requests/${requestIdToDelete}`, { method: 'DELETE' });
+            
             if (res.ok) {
-                const row = document.getElementById(`row-${requestIdToDelete}`);
-                if (row) {
-                    row.style.opacity = '0';
-                    setTimeout(() => row.remove(), 300);
-                }
+                const card = document.getElementById(`req-${requestIdToDelete}`);
+                if (card) card.remove();
                 showToast('Request deleted successfully', 'success');
             } else {
                 showToast('Failed to delete request', 'error');
@@ -228,10 +390,12 @@
             console.error(err);
             showToast('Network Error', 'error');
         } finally {
-            closeDeleteModal();
-            confirmBtn.innerText = '<%= t.common.delete %>';
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            closeModal('deleteRequestModal');
         }
     });
+
 </script>
 
 <%- include('partials/admin-footer', { page: 'requests' }) %>

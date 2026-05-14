@@ -1,19 +1,20 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const auth = require('../middleware/auth');
+const auth = require("../middleware/auth");
 
-// In routes/auth.js OR app.js
-router.get('/', auth.redirectIfLoggedIn, (req, res) => {
-  // If user is already logged in, maybe redirect them to dashboard?
+router.get("/", auth.redirectIfLoggedIn, (req, res) => {
+  // If user is already logged in, redirect them
   if (req.cookies.token) {
     // Optional: Check role and redirect accordingly
-    return res.redirect('/admin/dashboard');
+    return res.redirect("/admin/dashboard");
   }
-  res.render('home');
+
+  // Redirect to the user login page instead of rendering 'home'
+  res.redirect("/user/login");
 });
 
-router.get('/privacy', (req, res) => {
-    res.render('privacy');
+router.get("/privacy", (req, res) => {
+  res.render("privacy");
 });
 
 module.exports = router;

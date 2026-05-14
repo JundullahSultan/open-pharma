@@ -62,31 +62,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const toggleBtn = document.getElementById('themeToggle');
-        const themeIcon = document.getElementById('themeIcon');
-        const htmlEl = document.documentElement;
-
-        const currentTheme = localStorage.getItem('theme') || 'dark';
-        if (currentTheme === 'light') {
-            themeIcon.classList.replace('ph-moon', 'ph-sun');
-            themeIcon.style.color = "#f59e0b";
-        }
-
-        toggleBtn.addEventListener('click', () => {
-            const isDark = htmlEl.getAttribute('data-theme') !== 'light';
-            if (isDark) {
-                htmlEl.setAttribute('data-theme', 'light');
-                localStorage.setItem('theme', 'light');
-                themeIcon.classList.replace('ph-moon', 'ph-sun');
-                themeIcon.style.color = "#f59e0b";
-            } else {
-                htmlEl.removeAttribute('data-theme');
-                localStorage.setItem('theme', 'dark');
-                themeIcon.classList.replace('ph-sun', 'ph-moon');
-                themeIcon.style.color = "var(--text-main)";
-            }
-        });
-
         // Highlight active mobile nav link
         const currentPath = window.location.pathname;
         document.querySelectorAll('.mobile-bottom-nav a').forEach(link => {

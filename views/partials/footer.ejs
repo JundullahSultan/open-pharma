@@ -1,5 +1,6 @@
 <script>
-    // 1. Get Elements
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Get Elements Safely
     const toggleBtn = document.getElementById('themeToggle');
     const themeIcon = document.getElementById('themeIcon');
     const htmlEl = document.documentElement;
@@ -13,30 +14,37 @@
         applyDark();
     }
 
-    // 3. Toggle Logic
-    toggleBtn.addEventListener('click', () => {
-        const currentTheme = htmlEl.getAttribute('data-theme');
-        if (currentTheme === 'light') {
-            applyDark();
-        } else {
-            applyLight();
-        }
-    });
+    // 3. Toggle Logic (Only run if the button exists)
+    if (toggleBtn && themeIcon) {
+        toggleBtn.addEventListener('click', () => {
+            const currentTheme = htmlEl.getAttribute('data-theme');
+            if (currentTheme === 'light') {
+                applyDark();
+            } else {
+                applyLight();
+            }
+        });
+    }
 
     // --- Helper Functions ---
     function applyLight() {
         htmlEl.setAttribute('data-theme', 'light');
         localStorage.setItem('theme', 'light');
-        themeIcon.classList.replace('ph-moon', 'ph-sun');
-        themeIcon.style.color = "#f59e0b"; // Orange Sun
+        if (themeIcon) {
+            themeIcon.classList.replace('ph-moon', 'ph-sun');
+            themeIcon.style.color = "#f59e0b"; // Orange Sun
+        }
     }
 
     function applyDark() {
         htmlEl.removeAttribute('data-theme');
         localStorage.setItem('theme', 'dark');
-        themeIcon.classList.replace('ph-sun', 'ph-moon');
-        themeIcon.style.color = "var(--text-main)";
+        if (themeIcon) {
+            themeIcon.classList.replace('ph-sun', 'ph-moon');
+            themeIcon.style.color = "var(--text-main)";
+        }
     }
+});
 </script>
 
 <script>

@@ -1,24 +1,27 @@
 <div class="mobile-spacer" style="height: 100px;"></div>
-        </main> </div> <div id="adminMoreMenu" class="expanded-menu">
+        </main> 
+    </div> 
+
+    <div id="adminMoreMenu" class="expanded-menu">
         <div class="menu-grid">
             <a href="/admin/requests" class="menu-item <%= page === 'requests' ? 'active' : '' %>">
                 <div class="icon-box"><i class="ph ph-hand-waving"></i></div>
-                <span>Requests</span>
+                <span><%= t.common.requests %></span>
             </a>
 
             <a href="/admin/ai" class="menu-item <%= page === 'ai' ? 'active' : '' %>">
                 <div class="icon-box"><i class="ph ph-robot"></i></div>
-                <span>AI Analyst</span>
+                <span><%= t.aiAnalyst.title %></span>
             </a>
 
             <a href="/admin/settings" class="menu-item">
                 <div class="icon-box"><i class="ph ph-gear"></i></div>
-                <span>Settings</span>
+                <span><%= t.common.settings %></span>
             </a>
 
             <a href="/admin/logout" class="menu-item">
                 <div class="icon-box danger"><i class="ph ph-sign-out"></i></div>
-                <span>Logout</span>
+                <span><%= t.common.logout %></span>
             </a>
         </div>
     </div>
@@ -26,27 +29,27 @@
     <nav class="mobile-bottom-nav">
         <a href="/admin/dashboard" class="nav-item <%= page === 'dashboard' ? 'active' : '' %>">
             <i class="ph ph-squares-four"></i>
-            <span>Home</span>
+            <span><%= t.home %></span>
         </a>
 
         <a href="/admin/users" class="nav-item <%= page === 'users' ? 'active' : '' %>">
             <i class="ph ph-users"></i>
-            <span>Users</span>
+            <span><%= t.users %></span>
         </a>
 
         <a href="/admin/medicines" class="nav-item <%= page === 'medicines' ? 'active' : '' %>">
             <div class="fab"><i class="ph ph-flask"></i></div>
-            <span>Meds</span>
+            <span><%= t.common.medicines %></span>
         </a>
 
         <a href="/admin/orders" class="nav-item <%= page === 'orders' ? 'active' : '' %>">
             <i class="ph ph-package"></i>
-            <span>Orders</span>
+            <span><%= t.orders %></span>
         </a>
 
         <button class="nav-item" onclick="toggleAdminMenu()" style="background:var(--bg-dark); border:none; color: inherit; font-family: inherit;">
             <i class="ph ph-dots-three-circle" id="adminMoreIcon"></i>
-            <span>More</span>
+            <span><%= t.common.more %></span>
         </button>
     </nav>
 

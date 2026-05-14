@@ -48,10 +48,10 @@
 }
 
 html[lang="ps"] {
-  --main-font: var(--font-ps);
+  --main-font: "Segoe UI";
 }
 html[lang="fa"] {
-  --main-font: var(--font-fa);
+  --main-font: "Segoe UI";
 }
 
 /* =========================================

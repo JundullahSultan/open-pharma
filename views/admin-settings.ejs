@@ -81,6 +81,7 @@
 
     /* Language segmented control */
     .lang-segmented {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         display: flex;
         border: 1px solid var(--glass-border);
         border-radius: 12px;
@@ -148,7 +149,6 @@
 </style>
 
 <section class="card settings-card">
-    <!-- Profile Header -->
     <div class="profile-row">
         <div class="profile-avatar">
             <% if (user && user.imageURL) { %>
@@ -163,18 +163,17 @@
         </div>
     </div>
 
-    <!-- Appearance Setting -->
     <div class="setting-row">
         <div class="setting-info">
             <h4><i class="ph ph-paint-brush"></i> <%= t.settings.appearance %></h4>
             <p><%= t.settings.appearanceDesc %></p>
         </div>
-        <button id="themeToggle" class="theme-toggle-btn" title="Toggle theme">
-            <i class="ph ph-moon" id="themeIcon"></i>
+        
+        <button type="button" id="adminCardThemeToggle" class="theme-toggle-btn" title="Toggle theme">
+            <i class="ph ph-moon" id="adminCardThemeIcon"></i>
         </button>
     </div>
 
-    <!-- Language Setting -->
     <div class="setting-row">
         <div class="setting-info">
             <h4><i class="ph ph-globe"></i> <%= t.settings.language %></h4>
@@ -187,7 +186,6 @@
         </div>
     </div>
 
-    <!-- Logout -->
     <div class="logout-section">
         <a href="/admin/logout" class="logout-btn">
             <i class="ph ph-sign-out"></i> <%= t.settings.logout %>
@@ -196,28 +194,47 @@
 </section>
 
 <script>
-    (function() {
-        const themeToggle = document.getElementById('themeToggle');
-        const themeIcon = document.getElementById('themeIcon');
+    document.addEventListener('DOMContentLoaded', () => {
+        // Find the newly renamed elements
+        const cardToggleBtn = document.getElementById('adminCardThemeToggle');
+        const cardThemeIcon = document.getElementById('adminCardThemeIcon');
+        const headerThemeIcon = document.getElementById('themeIcon'); // The icon up in the header
         const html = document.documentElement;
 
-        function updateIcon() {
-            const isLight = html.getAttribute('data-theme') === 'light';
-            themeIcon.className = isLight ? 'ph ph-sun' : 'ph ph-moon';
-        }
+        if (!cardToggleBtn || !cardThemeIcon) return; // Safety check
 
-        // Init icon
+        // 1. Sync the icon to match the current theme
+        function updateIcon() {
+            const currentTheme = html.getAttribute('data-theme') || 'dark';
+            const newClass = currentTheme === 'light' ? 'ph ph-sun' : 'ph ph-moon';
+            
+            // Update the icon inside the settings card
+            cardThemeIcon.className = newClass;
+            
+            // Update the icon inside the header so they both match
+            if (headerThemeIcon) {
+                headerThemeIcon.className = newClass;
+            }
+        }
+        
         updateIcon();
 
-        themeToggle.addEventListener('click', () => {
-            const current = html.getAttribute('data-theme');
-            const next = current === 'light' ? 'dark' : 'light';
-            html.setAttribute('data-theme', next);
-            localStorage.setItem('theme', next);
+        // 2. Handle the toggle click from inside the settings card
+        cardToggleBtn.addEventListener('click', (e) => {
+            e.preventDefault(); // Stop any default button behaviors
+            
+            const currentTheme = html.getAttribute('data-theme') || 'dark';
+            const nextTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            // Apply to HTML
+            html.setAttribute('data-theme', nextTheme);
+            // Save to browser memory
+            localStorage.setItem('theme', nextTheme);
+            // Update icons on the page
             updateIcon();
         });
 
-        // Listen for storage changes (if another tab changes it)
+        // 3. Keep themes synced if user has multiple tabs open
         window.addEventListener('storage', (e) => {
             if (e.key === 'theme') {
                 const newTheme = e.newValue || 'dark';
@@ -225,7 +242,7 @@
                 updateIcon();
             }
         });
-    })();
+    });
 </script>
 
 <%- include('partials/admin-footer', { page: 'settings' }) %>

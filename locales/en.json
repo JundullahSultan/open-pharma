@@ -74,7 +74,8 @@
     "requests": "Requests",
     "new": "New",
     "admin": "Admin",
-    "settings": "Settings"
+    "settings": "Settings",
+    "more": "More"
   },
   "auth": {
     "welcomeBack": "Welcome Back",
@@ -230,5 +231,15 @@
     "thinking": "Thinking...",
     "error": "Error connecting to AI.",
     "noResponse": "Error: No response from server."
+  },
+  "futureEnhancements": {
+    "title": "Future Enhancements",
+    "description": "This dedicated space is reserved for features you plan to add later. Suggestions for this area:",
+    "revenue": "Revenue Analytics:",
+    "revenueDesc": "Integrate Chart.js to visualize weekly or monthly sales growth.",
+    "lowStock": "Low Stock Alerts:",
+    "lowStockDesc": "Query the database for stock quantities under 10 and list medicines requiring immediate restock.",
+    "activityFeed": "Activity Feed:",
+    "activityFeedDesc": "A log showing recent administrative actions (e.g., \"Medicine X updated\", \"User Y deleted\")."
   }
 }

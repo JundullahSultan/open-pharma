@@ -1,88 +1,455 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="<%= lang %>" dir="<%= dir %>">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Shahi Pharma | Revolutionizing B2B Pharmacy</title>
+    <title><%= t.meta.title || 'Shahi Pharma | Revolutionizing B2B Pharmacy' %></title>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=SUSE:wght@100..900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/styles/admin-style.css" />
+    <style>
+      /* ===== Landing Page – Responsive & Clean ===== */
+
+      /* Variables (mirrored from admin for independence) */
+      :root {
+        --bg-dark: #212121;
+        --surface-dark: #2d2d2d;
+        --surface-light: #3d3d3d;
+        --glass-border: #3a3a3a;
+        --text-main: #ececf1;
+        --text-muted: #8e8ea0;
+        --primary: #3b82f6;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --transition-fast: 0.15s ease-out;
+        --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+        --shadow-md: 0 4px 6px rgba(0,0,0,0.25);
+        --font-en: 'SUSE', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+
+      [data-theme='light'] {
+        --bg-dark: #ffffff;
+        --surface-dark: #f7f7f8;
+        --surface-light: #e5e5e5;
+        --glass-border: #d1d5db;
+        --text-main: #111827;
+        --text-muted: #6b7280;
+        --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+        --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: var(--font-en);
+        background: var(--bg-dark);
+        color: var(--text-main);
+        line-height: 1.5;
+        overflow-x: hidden;
+        min-height: 100vh;
+      }
+
+      a { text-decoration: none; color: inherit; }
+
+      /* ===== NAVIGATION ===== */
+      .landing-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 100;
+        background: var(--surface-dark);
+        border-bottom: 1px solid var(--glass-border);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .nav-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--text-main);
+        white-space: nowrap;
+      }
+
+      .nav-center {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+      }
+      .nav-center a {
+        color: var(--text-muted);
+        font-weight: 500;
+        transition: color var(--transition-fast);
+      }
+      .nav-center a:hover { color: var(--text-main); }
+
+      .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      /* Language switch */
+      .lang-switch {
+        display: flex;
+        gap: 4px;
+        background: var(--surface-light);
+        padding: 4px;
+        border-radius: 8px;
+        border: 1px solid var(--glass-border);
+      }
+      .lang-switch a {
+        padding: 5px 12px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        border-radius: 6px;
+        transition: all var(--transition-fast);
+      }
+      .lang-switch a.active {
+        background: var(--primary);
+        color: white;
+      }
+      .lang-switch a:not(.active):hover {
+        background: rgba(255,255,255,0.05);
+        color: var(--text-main);
+      }
+
+      /* Buttons */
+      .btn-text {
+        padding: 8px 16px;
+        border: 1px solid var(--glass-border);
+        border-radius: 8px;
+        background: transparent;
+        color: var(--text-main);
+        font-weight: 500;
+        cursor: pointer;
+        transition: background var(--transition-fast);
+      }
+      .btn-text:hover { background: rgba(255,255,255,0.05); }
+
+      .btn-primary {
+        padding: 8px 20px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background var(--transition-fast);
+      }
+      .btn-primary:hover { background: #2563eb; }
+
+      /* Mobile menu toggle */
+      .hamburger {
+        display: none;
+        background: none;
+        border: 1px solid var(--glass-border);
+        color: var(--text-main);
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        font-size: 1.5rem;
+        cursor: pointer;
+        align-items: center;
+        justify-content: center;
+        transition: background var(--transition-fast);
+      }
+      .hamburger:hover { background: rgba(255,255,255,0.05); }
+
+      /* Full‑screen mobile menu */
+      .mobile-menu {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: var(--bg-dark);
+        z-index: 200;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+        padding: 2rem;
+      }
+      .mobile-menu.active { display: flex; }
+
+      .mobile-menu .close-btn {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        width: 44px;
+        height: 44px;
+        border-radius: 8px;
+        border: 1px solid var(--glass-border);
+        background: var(--surface-dark);
+        color: var(--text-main);
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+      .mobile-menu a {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-main);
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: background var(--transition-fast);
+      }
+      .mobile-menu a:hover { background: var(--surface-dark); }
+      .mobile-menu .lang-switch-mobile { margin-top: 1rem; display: flex; gap: 6px; background: var(--surface-dark); padding: 6px; border-radius: 10px; }
+
+      /* ===== HERO SECTION ===== */
+      .hero {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 6rem 2rem 4rem;  /* extra top padding for fixed nav */
+        text-align: center;
+        background: var(--bg-dark);
+      }
+
+      .hero-content {
+        max-width: 800px;
+        animation: fadeInUp 0.8s ease-out;
+      }
+
+      .hero h1 {
+        font-size: 3.5rem;
+        font-weight: 900;
+        line-height: 1.2;
+        margin-bottom: 1.5rem;
+        letter-spacing: -0.5px;
+        color: var(--text-main);
+      }
+
+      html[lang="ps"] .hero h1 {
+        font-family: var(--font-ps);
+      }
+
+      html[lang="fa"] .hero h1 {
+        font-family: var(--font-fa);
+      }
+
+      .hero p {
+        font-size: 1.25rem;
+        color: var(--text-muted);
+        margin-bottom: 2.5rem;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .hero-btns {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .btn-primary-lg {
+        padding: 14px 32px;
+        background: var(--primary);
+        color: white;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1.05rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: background var(--transition-fast), transform var(--transition-fast);
+      }
+      .btn-primary-lg:hover {
+        background: #2563eb;
+        transform: translateY(-1px);
+      }
+
+      .btn-glass {
+        padding: 14px 32px;
+        background: transparent;
+        border: 1px solid var(--glass-border);
+        color: var(--text-main);
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1.05rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: background var(--transition-fast), transform var(--transition-fast);
+      }
+      .btn-glass:hover {
+        background: rgba(255,255,255,0.05);
+        transform: translateY(-1px);
+      }
+
+      /* Floating theme toggle */
+      .floating-theme-btn {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: var(--surface-dark);
+        border: 1px solid var(--glass-border);
+        color: var(--text-main);
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 50;
+        box-shadow: var(--shadow-md);
+        transition: transform var(--transition-fast), background var(--transition-fast);
+      }
+      .floating-theme-btn:hover { transform: scale(1.1); }
+
+      /* Mobile responsiveness */
+      @media (max-width: 768px) {
+        .nav-center, .nav-actions { display: none; }
+        .hamburger { display: flex; }
+
+        .hero h1 { font-size: 2.4rem; }
+        .hero p { font-size: 1.1rem; padding: 0 1rem; }
+        .hero { padding-top: 5rem; }
+
+        .landing-nav { padding: 0.8rem 1.2rem; }
+      }
+
+      @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    </style>
   </head>
-  <body style="font-family: 'SUSE', var(--font-en);">
+  <body>
     
+    <!-- Navigation -->
     <nav class="landing-nav">
       <a href="/" class="nav-logo">
         <i class="ph ph-pill"></i>
-        <span>Shahi Pharma</span>
+        <span><%= t.navbar.brand || 'Shahi Pharma' %></span>
       </a>
 
       <div class="nav-center">
-        <a href="/">Home</a>
-        <a href="/products">Products</a>
-        <a href="/about">About</a>
+        <a href="/"><%= t.home || 'Home' %></a>
+        <a href="/products"><%= t.common.medicines || 'Products' %></a>
+        <a href="/about"><%= t.navbar.about || 'About' %></a>
         <a href="/contact">Contact</a>
       </div>
 
       <div class="nav-actions">
         <div class="lang-switch">
-          <a href="?lang=en" class="active">EN</a>
-          <a href="?lang=fa">FA</a>
-          <a href="?lang=ps">PS</a>
+          <a href="/lang/en" class="<%= lang === 'en' ? 'active' : '' %>">EN</a>
+          <a href="/lang/fa" class="<%= lang === 'fa' ? 'active' : '' %>">FA</a>
+          <a href="/lang/ps" class="<%= lang === 'ps' ? 'active' : '' %>">PS</a>
         </div>
-        
-        <a href="/user/login" class="btn-text">Log in</a>
-        <a href="/user/signup" class="btn-primary">Sign up</a>
+        <a href="/user/login" class="btn-text"><%= t.common.login || 'Log in' %></a>
+        <a href="/user/signup" class="btn-primary"><%= t.auth.createAccount || 'Sign up' %></a>
       </div>
+
+      <!-- Hamburger (mobile) -->
+      <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
+        <i class="ph ph-list"></i>
+      </button>
     </nav>
 
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu" id="mobileMenu">
+      <button class="close-btn" id="closeMobileMenu"><i class="ph ph-x"></i></button>
+      <a href="/" onclick="closeMobileMenu()"><%= t.home || 'Home' %></a>
+      <a href="/products" onclick="closeMobileMenu()"><%= t.common.medicines || 'Products' %></a>
+      <a href="/about" onclick="closeMobileMenu()"><%= t.navbar.about || 'About' %></a>
+      <a href="/contact" onclick="closeMobileMenu()">Contact</a>
+      <div class="lang-switch-mobile">
+        <a href="/lang/en" class="<%= lang === 'en' ? 'active' : '' %>">EN</a>
+        <a href="/lang/fa" class="<%= lang === 'fa' ? 'active' : '' %>">FA</a>
+        <a href="/lang/ps" class="<%= lang === 'ps' ? 'active' : '' %>">PS</a>
+      </div>
+      <a href="/user/login" class="btn-primary" style="margin-top:1rem; width: 80%; text-align: center;">
+        <%= t.common.login || 'Log in' %>
+      </a>
+      <a href="/user/signup" class="btn-text" style="width: 80%; text-align: center;">
+        <%= t.auth.createAccount || 'Sign up' %>
+      </a>
+    </div>
+
+    <!-- Hero Section -->
     <main class="hero">
       <div class="hero-content">
-        <h1>Revolutionizing<br>B2B Pharmacy</h1>
+        <h1><%= t.hero.title || 'Powering the Next Generation of Pharmacy Supply' %></h1>
         <p>
-          Your trusted partner for wholesale pharmaceuticals. Streamline your 
-          inventory, manage orders efficiently, and grow your business with 
-          Shahi Pharma.
+          <%= t.hero.description || 'Your trusted partner for wholesale pharmaceuticals. Streamline your inventory, manage orders efficiently, and grow your business with Shahi Pharma.' %>
         </p>
         <div class="hero-btns">
-          <a href="/user/login" class="btn-primary-lg">Get Started</a>
-          <a href="/products" class="btn-glass">Browse Products</a>
+          <a href="/user/login" class="btn-primary-lg"><%= t.common.login || 'Get Started' %></a>
+          <!-- <a href="/products" class="btn-glass"><%= t.common.viewAll || 'Browse Products' %></a> -->
         </div>
       </div>
     </main>
 
+    <!-- Floating Theme Toggle -->
     <button id="theme-toggle" class="floating-theme-btn" aria-label="Toggle Theme">
       <i class="ph ph-moon" id="icon-moon"></i>
-      <i class="ph ph-sun" id="icon-sun"></i>
+      <i class="ph ph-sun" id="icon-sun" style="display:none;"></i>
     </button>
 
     <script>
-      const themeToggle = document.getElementById('theme-toggle');
-      
-      // 1. Check local storage for saved theme (default to dark)
-      const currentTheme = localStorage.getItem('shahi_theme') || 'dark';
-      
-      // 2. Apply theme on initial load
-      if (currentTheme === 'light') {
-        document.documentElement.setAttribute('data-theme', 'light');
-      }
+      // ----- Mobile Menu Toggle -----
+      const hamburger = document.getElementById('hamburgerBtn');
+      const mobileMenu = document.getElementById('mobileMenu');
+      const closeMobile = document.getElementById('closeMobileMenu');
 
-      // 3. Listen for clicks to toggle
+      function openMobileMenu() { mobileMenu.classList.add('active'); }
+      function closeMobileMenu() { mobileMenu.classList.remove('active'); }
+
+      hamburger.addEventListener('click', openMobileMenu);
+      closeMobile.addEventListener('click', closeMobileMenu);
+
+      // Close menu when clicking overlay background (if any)
+      mobileMenu.addEventListener('click', (e) => {
+        if (e.target === mobileMenu) closeMobileMenu();
+      });
+
+      // ----- Theme Toggle -----
+      const themeToggle = document.getElementById('theme-toggle');
+      const iconMoon = document.getElementById('icon-moon');
+      const iconSun = document.getElementById('icon-sun');
+
+      const currentTheme = localStorage.getItem('shahi_theme') || 'dark';
+      function applyTheme(theme) {
+        if (theme === 'light') {
+          document.documentElement.setAttribute('data-theme', 'light');
+          iconMoon.style.display = 'none';
+          iconSun.style.display = 'block';
+        } else {
+          document.documentElement.removeAttribute('data-theme');
+          iconMoon.style.display = 'block';
+          iconSun.style.display = 'none';
+        }
+      }
+      applyTheme(currentTheme);
+
       themeToggle.addEventListener('click', () => {
         const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-        
-        if (isLight) {
-          // Switch to Dark
-          document.documentElement.removeAttribute('data-theme');
-          localStorage.setItem('shahi_theme', 'dark');
-        } else {
-          // Switch to Light
-          document.documentElement.setAttribute('data-theme', 'light');
-          localStorage.setItem('shahi_theme', 'light');
-        }
+        const newTheme = isLight ? 'dark' : 'light';
+        localStorage.setItem('shahi_theme', newTheme);
+        applyTheme(newTheme);
       });
     </script>
-
-    </body>
+  </body>
 </html>

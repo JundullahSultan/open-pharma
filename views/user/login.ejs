@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="<%= lang %>" dir="<%= dir %>">
+<html lang="<%= lang %>" dir="<%= dir %>" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,26 +7,29 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=SUSE:ital,wght@0,100..900;1,100..900&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=SUSE:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/styles/admin-style.css" />
   </head>
   <body class="login-page">
+    
+    <div style="position: absolute; top: 20px; right: 20px; background: var(--surface-dark); border: 1px solid var(--glass-border); border-radius: 8px; overflow: hidden; display: flex; z-index: 100;">
+        <a href="/lang/en" style="padding: 6px 12px; text-decoration: none; color: <%= lang === 'en' ? 'var(--primary)' : 'var(--text-muted)' %>; font-weight: 600; font-size: 0.9rem;">EN</a>
+        <a href="/lang/fa" style="padding: 6px 12px; text-decoration: none; color: <%= lang === 'fa' ? 'var(--primary)' : 'var(--text-muted)' %>; font-weight: 600; font-size: 0.9rem; border-left: 1px solid var(--glass-border); border-right: 1px solid var(--glass-border);">FA</a>
+        <a href="/lang/ps" style="padding: 6px 12px; text-decoration: none; color: <%= lang === 'ps' ? 'var(--primary)' : 'var(--text-muted)' %>; font-weight: 600; font-size: 0.9rem;">PS</a>
+    </div>
+
     <div class="login-card">
       <div class="login-header">
         <div class="logo-large">
           <i class="ph ph-pill"></i>
         </div>
-       
         <h1><%= t.userLogin.welcome %></h1>
         <p><%= t.userLogin.subtitle %></p>
       </div>
 
       <div class="role-toggle">
-        <a href="/user/login" class="toggle-btn active">Pharmacy</a>
-        <a href="/admin/login" class="toggle-btn">Administrator</a>
+        <a href="/user/login" class="toggle-btn active"><%= t.common.pharmacy || 'Pharmacy' %></a>
+        <a href="/admin/login" class="toggle-btn"><%= t.common.admin || 'Administrator' %></a>
       </div>
 
       <form action="/user/login" method="POST">
@@ -35,7 +38,6 @@
           <div class="input-with-icon">
             <i class="ph ph-envelope-simple"></i>
             <input
-             
               type="email"
               name="email"
               placeholder="<%= t.userLogin.emailPlaceholder %>"
@@ -46,7 +48,6 @@
 
         <div class="form-group">
           <label><%= t.common.password %></label>
-        
           <div class="input-with-icon">
             <i class="ph ph-lock-key"></i>
             <input
@@ -55,7 +56,6 @@
               placeholder="<%= t.userLogin.passwordPlaceholder %>"
               required
             />
-   
           </div>
         </div>
 
@@ -63,8 +63,42 @@
       </form>
 
       <div class="login-footer">
-        <a href="#"><%= t.userLogin.forgotPass %></a>
+        <a href="#" style="color: inherit;"><%= t.userLogin.forgotPass %></a>
       </div>
     </div>
+
+    <button class="floating-theme-btn" onclick="toggleTheme()" aria-label="Switch theme">
+      <i id="icon-moon" class="ph ph-moon"></i>
+      <i id="icon-sun" class="ph ph-sun" style="display: none;"></i>
+    </button>
+
     <script src="/js/distroyGoBack.js"></script>
-<%- include('../partials/footer') %>
+    <%- include('../partials/footer') %>
+
+    <script>
+      (function() {
+        const saved = localStorage.getItem('theme');
+        if (saved) {
+          document.documentElement.setAttribute('data-theme', saved);
+        } else {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+        updateToggleIcon();
+      })();
+
+      function toggleTheme() {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        updateToggleIcon();
+      }
+
+      function updateToggleIcon() {
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        document.getElementById('icon-moon').style.display = isLight ? 'none' : 'block';
+        document.getElementById('icon-sun').style.display = isLight ? 'block' : 'none';
+      }
+    </script>
+  </body>
+</html>
