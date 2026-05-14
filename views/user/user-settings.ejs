@@ -1,59 +1,238 @@
 <%- include('../partials/user-header', { title: t.settings.title, page: 'settings' }) %>
 
-<div class="card settings-card settings-card--compact">
-  <!-- Header -->
-  <div class="settings-header">
-    <h2><i class="ph ph-gear"></i> <%= t.settings.title %></h2>
-  </div>
+<style>
+  /* ==============================
+     SETTINGS – MODERN & MOBILE-FIRST
+     ============================== */
+  .settings-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 0.5rem;
+    margin-top: 1rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
 
-  <!-- Profile row (compact) -->
-  <div class="profile-row-compact">
-    <div class="avatar avatar-md">
+  /* Profile Card */
+  .profile-card {
+    background: var(--surface-dark);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .profile-avatar {
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    background: var(--surface-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: var(--primary);
+    font-weight: 600;
+    overflow: hidden;
+    border: 2px solid var(--glass-border);
+    flex-shrink: 0;
+  }
+
+  .profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .profile-info h3 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.3rem;
+    color: var(--text-main);
+  }
+
+  .profile-info p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  /* Settings Options Card */
+  .settings-list-card {
+    background: var(--surface-dark);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--glass-border);
+    gap: 1rem;
+  }
+
+  .setting-row:last-child {
+    border-bottom: none;
+  }
+
+  .setting-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .setting-details h4 {
+    margin: 0;
+    font-size: 1.05rem;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .setting-details h4 i {
+    color: var(--primary);
+    font-size: 1.2rem;
+  }
+
+  .setting-details p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  /* Theme Toggle Button */
+  .theme-toggle-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--bg-dark);
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .theme-toggle-btn:hover {
+    background: var(--surface-light);
+    border-color: var(--primary);
+  }
+
+  /* Language Pill Switcher */
+  .lang-switcher {
+    display: flex;
+    background: var(--bg-dark);
+    padding: 0.25rem;
+    border-radius: 50px;
+    border: 1px solid var(--glass-border);
+  }
+
+  .lang-pill {
+    padding: 0.5rem 1.25rem;
+    border-radius: 50px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+  }
+
+  .lang-pill.active {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .lang-pill:hover:not(.active) {
+    color: var(--text-main);
+  }
+
+  /* Big Logout Button */
+  .btn-logout-large {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 1rem;
+    border-radius: 16px;
+    background: rgba(239, 68, 68, 0.05);
+    color: var(--danger);
+    border: 1px dashed rgba(239, 68, 68, 0.3);
+    font-size: 1.05rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .btn-logout-large:hover {
+    background: var(--danger);
+    color: #fff;
+    border-style: solid;
+  }
+</style>
+
+<div class="settings-container">
+
+  <div class="profile-card">
+    <div class="profile-avatar">
       <% if (user && user.imageURL) { %>
-        <img src="<%= user.imageURL %>" alt="Profile" class="avatar-img">
+        <img src="<%= user.imageURL %>" alt="Profile">
       <% } else { %>
-        <span class="avatar-letter"><%= (typeof userName !== 'undefined' && userName) ? userName[0].toUpperCase() : 'U' %></span>
+        <%= (typeof userName !== 'undefined' && userName) ? userName[0].toUpperCase() : 'U' %>
       <% } %>
     </div>
-    <div class="profile-info-compact">
+    <div class="profile-info">
       <h3><%= typeof userName !== 'undefined' ? userName : t.adminRequests.user %></h3>
-      <p><%= (user && user.pharmacy) ? user.pharmacy : t.common.pharmacy %></p>
+      <p>
+        <i class="ph ph-storefront"></i> 
+        <%= (user && user.pharmacy) ? user.pharmacy : t.common.pharmacy %>
+      </p>
     </div>
   </div>
 
-  <!-- Settings in a 2‑column grid (desktop) -->
-  <div class="settings-grid">
-    <!-- Appearance -->
-    <div class="settings-item">
-      <div class="settings-item-text">
+  <div class="settings-list-card">
+    
+    <div class="setting-row">
+      <div class="setting-details">
         <h4><i class="ph ph-paint-brush"></i> <%= t.settings.appearance %></h4>
         <p><%= t.settings.appearanceDesc %></p>
       </div>
-      <button id="themeToggle" class="btn-icon theme-toggle-btn-sm" aria-label="Toggle theme">
+      <button id="themeToggle" class="theme-toggle-btn" aria-label="Toggle theme">
         <i class="ph ph-moon" id="themeIcon"></i>
       </button>
     </div>
 
-    <!-- Language -->
-    <div class="settings-item">
-      <div class="settings-item-text">
-        <h4><i class="ph ph-globe"></i> <%= t.settings.language %></h4>
-        <p><%= t.settings.languageDesc %></p>
-      </div>
-      <div class="lang-group">
-        <a href="/lang/en" class="lang-btn-sm <%= lang === 'en' ? 'active' : '' %>">EN</a>
-        <a href="/lang/fa" class="lang-btn-sm <%= lang === 'fa' ? 'active' : '' %>">فا</a>
-        <a href="/lang/ps" class="lang-btn-sm <%= lang === 'ps' ? 'active' : '' %>">پښ</a>
+    <div class="setting-row" style="justify-content: center; padding: 1.5rem;">
+      <div class="lang-switcher">
+        <a href="/lang/en" class="lang-pill <%= lang === 'en' ? 'active' : '' %>">EN</a>
+        <a href="/lang/fa" class="lang-pill <%= lang === 'fa' ? 'active' : '' %>">فا</a>
+        <a href="/lang/ps" class="lang-pill <%= lang === 'ps' ? 'active' : '' %>">پښ</a>
       </div>
     </div>
+
   </div>
 
-  <!-- Logout (full width, compact) -->
-  <div class="logout-row-compact">
-    <a href="/user/logout" class="btn-text logout-btn">
-      <i class="ph ph-sign-out"></i> <%= t.settings.logout %>
-    </a>
-  </div>
+  <a href="/user/logout" class="btn-logout-large">
+    <i class="ph ph-sign-out"></i> <%= t.settings.logout %>
+  </a>
+
 </div>
 
 <div class="mobile-spacer" style="height: 100px"></div>
@@ -62,33 +241,43 @@
 <%- include('../partials/footer') %>
 
 <script>
-  (function() {
-    const themeToggle = document.getElementById('themeToggle');
-    const themeIcon = document.getElementById('themeIcon');
-    
-    function setTheme(theme) {
-      document.documentElement.setAttribute('data-theme', theme);
-      localStorage.setItem('theme', theme);
-      if (themeIcon) {
-        themeIcon.className = theme === 'dark' ? 'ph ph-moon' : 'ph ph-sun';
+  document.addEventListener('DOMContentLoaded', () => {
+    // 1. Highlight active mobile nav link
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('.mobile-bottom-nav a').forEach(link => {
+      if (link.getAttribute('href') === currentPath) {
+        link.classList.add('active');
       }
+    });
+
+    // 2. Theme Toggle Logic
+    const themeBtn = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const html = document.documentElement;
+
+    // Initialize icon correctly on load
+    if (html.getAttribute('data-theme') === 'light') {
+      themeIcon.classList.replace('ph-moon', 'ph-sun');
+      themeIcon.style.color = "#f59e0b";
     }
-    
-    function getPreferredTheme() {
-      const stored = localStorage.getItem('theme');
-      if (stored) return stored;
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-    
-    if (themeToggle) {
-      themeToggle.addEventListener('click', () => {
-        const current = document.documentElement.getAttribute('data-theme') || 'dark';
-        const newTheme = current === 'dark' ? 'light' : 'dark';
-        setTheme(newTheme);
+
+    // Toggle theme on click
+    if (themeBtn) {
+      themeBtn.addEventListener('click', () => {
+        const isLight = html.getAttribute('data-theme') === 'light';
+        
+        if (isLight) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'dark');
+          themeIcon.classList.replace('ph-sun', 'ph-moon');
+          themeIcon.style.color = "var(--text-main)";
+        } else {
+          html.setAttribute('data-theme', 'light');
+          localStorage.setItem('theme', 'light');
+          themeIcon.classList.replace('ph-moon', 'ph-sun');
+          themeIcon.style.color = "#f59e0b";
+        }
       });
     }
-    
-    const initialTheme = getPreferredTheme();
-    setTheme(initialTheme);
-  })();
+  });
 </script>

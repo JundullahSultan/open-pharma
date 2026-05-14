@@ -1,341 +1,404 @@
 <%- include('partials/admin-header', { title: t.adminUsers.title, page: 'users' }) %>
 
 <style>
-    .toolbar { margin-bottom: 20px; }
-    
+    /* ===== TOOLBAR & SEARCH ===== */
+    .toolbar { 
+        margin-bottom: 16px; 
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
     .search-bar {
         display: flex;
         align-items: center;
         background: var(--surface-dark);
         border: 1px solid var(--glass-border);
-        border-radius: 10px;
-        padding: 10px 16px;
-        gap: 12px;
-        transition: all var(--transition-fast);
-        max-width: 450px;
+        border-radius: 8px;
+        padding: 8px 14px;
+        gap: 10px;
+        transition: all 0.2s ease;
+        max-width: 400px;
+        width: 100%;
+        box-shadow: var(--shadow-sm);
     }
     .search-bar:focus-within {
         border-color: var(--primary);
-        box-shadow: 0 0 0 4px rgba(59,130,246,0.15);
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
     }
-    .search-bar i { color: var(--text-muted); font-size: 1.2rem; }
+    .search-bar i { color: var(--text-muted); font-size: 1.1rem; }
     .search-bar:focus-within i { color: var(--primary); }
     .search-bar input {
         border: none; background: transparent; color: var(--text-main);
-        outline: none; width: 100%; font-size: 0.95rem; font-family: inherit;
+        outline: none; width: 100%; font-size: 0.9rem; font-family: inherit;
     }
     .search-bar input::placeholder { color: var(--text-muted); }
 
+    /* ===== LAYOUT & GRID ===== */
     .users-layout {
         display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 20px;
+        grid-template-columns: 2.5fr 1fr; /* Prioritize the user list space */
+        gap: 16px;
         align-items: start;
-        margin-top: 20px;
     }
     @media (max-width: 992px) {
         .users-layout { grid-template-columns: 1fr; }
     }
 
-    /* ===== Unified Responsive Card Grid (Matches Orders Page) ===== */
-    .users-grid {
+    /* ===== USER LIST (COMPACT) ===== */
+    .user-list-header {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-        gap: 1.25rem;
-    }
-
-    .user-card {
-        background: var(--surface-dark);
-        border: 1px solid var(--glass-border);
-        border-radius: 12px;
-        padding: 16px;
-        display: flex;
-        flex-direction: column;
+        grid-template-columns: 2.5fr 2fr 1.5fr 1fr 80px;
         gap: 12px;
+        padding: 0 16px 8px 16px;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 700;
+        border-bottom: 1px solid var(--glass-border);
+        margin-bottom: 8px;
+    }
+
+    .user-card-row {
+        display: grid;
+        grid-template-columns: 2.5fr 2fr 1.5fr 1fr 80px;
+        gap: 12px;
+        align-items: center;
+        padding: 10px 16px;
+        background: linear-gradient(145deg, var(--surface-dark) 0%, rgba(255,255,255,0.01) 100%);
+        border: 1px solid var(--glass-border);
+        border-radius: 10px;
+        margin-bottom: 6px;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         box-shadow: var(--shadow-sm);
-        transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
     }
-    .user-card:hover {
-        transform: translateY(-2px);
+    .user-card-row:hover {
+        border-color: rgba(59, 130, 246, 0.4);
         box-shadow: var(--shadow-md);
-    }
-    .user-card.highlight {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+        transform: translateX(4px); /* Sleek slide-right effect */
     }
 
-    .user-card-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .user-card-profile {
+    .user-info-col {
         display: flex;
         align-items: center;
-        gap: 10px;
-        max-width: 70%;
-    }
-
-    .user-avatar {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
+        gap: 12px;
         overflow: hidden;
-        flex-shrink: 0;
-        background: var(--surface-light);
+    }
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: rgba(59, 130, 246, 0.1);
+        color: var(--primary);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: bold;
-        color: var(--text-muted);
-        border: 1px solid var(--glass-border);
+        font-weight: 700;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+        border: 1px solid rgba(59, 130, 246, 0.2);
     }
     .user-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
+        width: 100%; height: 100%; object-fit: cover; border-radius: 8px;
     }
-
-    .user-card-name {
-        font-weight: 600;
-        color: var(--text-main);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+    
+    .user-details {
+        display: flex; flex-direction: column; overflow: hidden;
     }
+    .user-name { font-weight: 600; color: var(--text-main); font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-email { color: var(--text-muted); font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-pharmacy { font-size: 0.85rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    .user-card-bottom {
+    /* Compact Pill Badges */
+    .badge {
+        padding: 2px 8px;
+        font-size: 0.65rem;
+        border-radius: 20px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-block;
+        width: fit-content;
+    }
+    .badge.admin { background: rgba(168,85,247,0.15); color: #c084fc; border: 1px solid rgba(168,85,247,0.2); }
+    .badge.user { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.2); }
+
+    .user-date { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* Miniaturized Action Buttons */
+    .user-actions {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        color: var(--text-muted);
-        font-size: 0.85rem;
+        gap: 6px;
+        justify-content: flex-end;
     }
-
-    .user-card-pharmacy {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 60%;
-    }
-
-    .user-action-btns {
-        display: flex;
-        gap: 8px;
-    }
-
-    .user-icon-btn {
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
+    .action-btn-sm {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
         border: 1px solid var(--glass-border);
-        background: transparent;
+        background: var(--surface-light);
         color: var(--text-muted);
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: all var(--transition-fast);
+        transition: all 0.2s ease;
+        font-size: 1rem;
     }
-    .user-icon-btn.eye:hover {
-        color: var(--primary);
-        background: rgba(59,130,246,0.1);
-        border-color: var(--primary);
-    }
-    .user-icon-btn.delete:hover {
-        color: white;
-        background: var(--danger);
-        border-color: var(--danger);
+    .action-btn-sm:hover { color: var(--primary); background: rgba(59, 130, 246, 0.15); border-color: var(--primary); }
+    .action-btn-sm.danger:hover { color: var(--danger); background: rgba(239, 68, 68, 0.15); border-color: var(--danger); }
+
+    /* Responsive Grid Fallback for Mobile */
+    @media (max-width: 768px) {
+        .user-list-header { display: none; }
+        .user-card-row {
+            grid-template-columns: 1fr;
+            gap: 8px;
+            padding: 12px;
+        }
+        .user-pharmacy, .user-date { display: flex; align-items: center; gap: 6px; }
+        .user-pharmacy::before { content: "Pharmacy: "; color: var(--text-muted); font-size: 0.75rem; }
+        .user-date::before { content: "Joined: "; color: var(--text-muted); font-size: 0.75rem; }
+        .user-actions { justify-content: flex-start; margin-top: 8px; border-top: 1px dashed var(--glass-border); padding-top: 10px;}
     }
 
-    /* ===== Create User Form ===== */
-    .create-user .form-group input,
-    .create-user .form-group select,
-    .create-user .form-group .file-input {
-        width: 100%;
-        padding: 12px 14px;
-        border-radius: 8px;
-        border: 1px solid var(--glass-border);
-        background: var(--surface-light);
-        color: var(--text-main);
-        font-size: 0.95rem;
-        transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-    }
-    .create-user .form-group input:focus,
-    .create-user .form-group select:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
-    }
-    .create-user .form-group label {
-        display: block;
-        margin-bottom: 6px;
-        font-weight: 500;
-        color: var(--text-main);
-        font-size: 0.85rem;
-    }
-    .create-user .btn-primary { width: 100%; padding: 14px; font-size: 1rem; margin-top: 10px; }
-
-    /* ===== Detail Modal Grid ===== */
-    #userDetailModal .detail-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-        font-size: 0.95rem;
-        margin-bottom: 1rem;
-        background: var(--surface-light);
-        padding: 1.5rem;
+    /* ===== CREATE USER FORM (PREMIUM COMPACT) ===== */
+    .create-user-card {
+        background: linear-gradient(135deg, var(--surface-dark) 0%, rgba(59, 130, 246, 0.05) 100%);
+        border: 1px solid rgba(59, 130, 246, 0.2);
         border-radius: 12px;
-        border: 1px solid var(--glass-border);
+        padding: 16px;
+        margin: 0;
+        box-shadow: var(--shadow-sm);
     }
-    @media (max-width: 480px) {
-        #userDetailModal .detail-grid { grid-template-columns: 1fr; }
+    .create-user-card h3 {
+        margin-top: 0;
+        margin-bottom: 16px;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
-    #userDetailModal .detail-grid p { margin: 0; color: var(--text-main); }
-    #userDetailModal .detail-grid strong {
+    .create-user-card h3 i { color: var(--primary); }
+    
+    .form-group-compact {
+        margin-bottom: 12px;
+    }
+    .form-group-compact label {
         display: block;
+        margin-bottom: 4px;
         font-size: 0.8rem;
         color: var(--text-muted);
-        margin-bottom: 4px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        font-weight: 600;
     }
+    .form-group-compact input, .form-group-compact select {
+        width: 100%;
+        padding: 8px 12px;
+        background: var(--bg-dark);
+        border: 1px solid var(--glass-border);
+        border-radius: 8px;
+        color: var(--text-main);
+        font-size: 0.9rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        outline: none;
+    }
+    .form-group-compact input:focus, .form-group-compact select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+    
+    .btn-create {
+        width: 100%;
+        padding: 10px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        margin-top: 4px;
+    }
+    .btn-create:hover { background: #2563eb; }
+
+    /* ===== COMPACT MODALS ===== */
+    .custom-backdrop {
+        display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 9999;
+        align-items: center; justify-content: center;
+    }
+    .modal-content-animated {
+        background: var(--surface-dark); border: 1px solid var(--glass-border);
+        border-radius: 16px; padding: 20px; width: 90%; max-width: 400px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        animation: slideUpFade 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+    .btn-outline { background: transparent; border: 1px solid var(--glass-border); color: var(--text-main); padding: 8px 16px; border-radius: 8px; cursor: pointer; }
+    .btn-outline:hover { background: var(--surface-light); }
+    .btn-danger { background: var(--danger); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; }
+    .btn-danger:hover { background: #dc2626; }
 </style>
+
+<div id="toast-container"></div>
 
 <div class="toolbar">
     <div class="search-bar">
         <i class="ph ph-magnifying-glass"></i>
-        <input type="text" id="searchInput" placeholder="<%= t.adminUsers.searchPlaceholder %>">
+        <input type="text" id="searchInput" placeholder="<%= t.adminUsers.searchPlaceholder %>" onkeyup="filterUsers()">
     </div>
 </div>
 
 <div class="users-layout">
-    <section class="users-grid" id="usersGrid">
-        <% users.forEach((user) => { %>
-        <div class="user-card" id="user-card-<%= user._id %>" data-name="<%= user.name.toLowerCase() %>" data-pharmacy="<%= user.pharmacy ? user.pharmacy.toLowerCase() : '' %>" data-email="<%= user.email.toLowerCase() %>" data-role="<%= user.role.toLowerCase() %>">
-            
-            <div class="user-card-top">
-                <div class="user-card-profile">
-                    <div class="user-avatar">
-                        <% if(user.imageURL) { %>
-                            <img src="<%= user.imageURL %>" alt="<%= user.name %>">
-                        <% } else { %>
-                            <%= user.name[0].toUpperCase() %>
-                        <% } %>
-                    </div>
-                    <span class="user-card-name"><%= user.name %></span>
-                </div>
-                <span class="badge <%= user.role === 'admin' ? 'approved' : 'pending' %>">
-                    <%= user.role === 'admin' ? t.common.admin : t.adminRequests.user %>
-                </span>
-            </div>
 
-            <div class="user-card-bottom">
-                <span class="user-card-pharmacy"><%= user.pharmacy %></span>
+    <aside>
+        <section class="create-user-card">
+            <h3><i class="ph ph-user-plus"></i> <%= t.adminUsers.addNewUser %></h3>
+            <form id="createUserForm">
+                <div class="form-group-compact">
+                    <label><%= t.adminUsers.formName %></label>
+                    <input type="text" name="name" required placeholder="John Doe">
+                </div>
                 
-                <div class="user-action-btns">
-                    <button class="user-icon-btn eye" data-user="<%= encodeURIComponent(JSON.stringify(user)) %>" onclick="openUserDetail(this)" title="<%= t.common.viewDetails %>">
-                        <i class="ph ph-eye"></i>
-                    </button>
+                <div class="form-group-compact">
+                    <label><%= t.adminUsers.formEmail %></label>
+                    <input type="email" name="email" required placeholder="john@example.com">
+                </div>
+                
+                <div class="form-group-compact">
+                    <label><%= t.adminUsers.formPassword %></label>
+                    <input type="password" name="password" required placeholder="••••••••">
+                </div>
+                
+                <div class="form-group-compact">
+                    <label><%= t.adminUsers.formPharmacy %></label>
+                    <input type="text" name="pharmacy" placeholder="City Pharmacy (Optional)">
+                </div>
+                
+                <div class="form-group-compact">
+                    <label><%= t.adminUsers.formRole %></label>
+                    <select name="role">
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn-create">
+                    <i class="ph ph-plus-circle"></i> <%= t.adminUsers.btnCreate %>
+                </button>
+            </form>
+        </section>
+    </aside>
+    
+    <div class="users-list-container">
+        <div class="user-list-header">
+            <div>User</div>
+            <div>Pharmacy</div>
+            <div>Role</div>
+            <div>Joined</div>
+            <div style="text-align: right;">Actions</div>
+        </div>
+
+        <div id="userGrid">
+            <% users.forEach(u => { %>
+                <div class="user-card-row" data-name="<%= u.name.toLowerCase() %>" data-email="<%= u.email.toLowerCase() %>" data-pharmacy="<%= (u.pharmacy || '').toLowerCase() %>">
                     
-                    <% if (user.email !== 'suhrab@gmail.com') { %>
-                        <button class="user-icon-btn delete" onclick="openDeleteModal('<%= user._id%>')" title="<%= t.common.delete %>">
+                    <div class="user-info-col">
+                        <div class="user-avatar">
+                            <% if(u.imageURL) { %>
+                                <img src="<%= u.imageURL %>" alt="<%= u.name %>">
+                            <% } else { %>
+                                <%= u.name.charAt(0).toUpperCase() %>
+                            <% } %>
+                        </div>
+                        <div class="user-details">
+                            <span class="user-name"><%= u.name %></span>
+                            <span class="user-email"><%= u.email %></span>
+                        </div>
+                    </div>
+
+                    <div class="user-pharmacy">
+                        <%= u.pharmacy || '-' %>
+                    </div>
+
+                    <div>
+                        <span class="badge <%= u.role === 'admin' ? 'admin' : 'user' %>"><%= u.role %></span>
+                    </div>
+
+                    <div class="user-date">
+                        <%= new Date(u.createdAt).toLocaleDateString() %>
+                    </div>
+
+                    <div class="user-actions">
+                        <button class="action-btn-sm" onclick="openResetModal('<%= u._id %>')" title="Reset Password">
+                            <i class="ph ph-key"></i>
+                        </button>
+                        <button class="action-btn-sm danger" onclick="openDeleteModal('<%= u._id %>', '<%= u.name %>')" title="Delete User">
                             <i class="ph ph-trash"></i>
                         </button>
-                    <% } else { %>
-                        <span class="badge approved" style="background: var(--surface-light); color: var(--text-muted); font-size:0.7rem;">
-                            <i class="ph ph-lock-key"></i> <%= t.common.admin %>
-                        </span>
-                    <% } %>
+                    </div>
+
                 </div>
-            </div>
-
+            <% }) %>
         </div>
-        <% }) %>
-    </section>
+        
+        <% if(users.length === 0) { %>
+            <div style="text-align:center; padding: 40px; color: var(--text-muted); background: var(--surface-dark); border-radius: 12px; border: 1px dashed var(--glass-border);">
+                <i class="ph ph-users" style="font-size: 3rem; margin-bottom: 10px; opacity: 0.5;"></i>
+                <p>No users found in the system.</p>
+            </div>
+        <% } %>
+    </div>
 
-    <section class="card create-user" style="margin: 0;">
-        <div class="card-header" style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--glass-border);">
-            <h2 style="margin: 0;"><%= t.adminUsers.addNew %></h2>
-        </div>
-        <form id="createUserForm" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 15px;">
-            <div class="form-group">
-                <label><%= t.common.name %></label>
-                <input type="text" name="name" required>
-            </div>
-            <div class="form-group">
-                <label><%= t.auth.pharmacyName %></label>
-                <input type="text" name="pharmacy" required>
-            </div>
-            <div class="form-group">
-                <label><%= t.common.email %></label>
-                <input type="email" name="email" required>
-            </div>
-            <div class="form-group">
-                <label><%= t.auth.password %></label>
-                <input type="password" name="password" required>
-            </div>
-            <div class="form-group">
-                <label><%= t.common.role %></label>
-                <select name="role">
-                    <option value="user"><%= t.adminRequests.user %></option>
-                    <option value="admin"><%= t.common.admin %></option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label><%= t.common.image %></label>
-                <input type="file" name="imageURL" accept="image/*" class="file-input">
-            </div>
-            <button type="submit" class="btn-primary"><%= t.adminDashboard.createUser %></button>
-        </form>
-    </section>
+    
 </div>
 
-<div id="toast-container"></div>
-
-<div id="userDetailModal" class="custom-backdrop" style="display: none;">
-    <div class="modal-content" style="display: block; opacity: 1; max-width: 480px; width: 95%; padding: 2rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-            <h3 style="margin:0;"><%= t.common.viewDetails %></h3>
-            <button type="button" onclick="closeUserDetail()" style="background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; line-height: 1;">&times;</button>
+<div class="custom-backdrop" id="resetModal">
+    <div class="modal-content-animated">
+        <h3 style="margin-top:0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;"><i class="ph ph-key" style="color:var(--primary);"></i> Reset Password</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">Enter a new password for this user.</p>
+        
+        <input type="hidden" id="resetUserId">
+        <div class="form-group-compact">
+            <input type="password" id="newPassword" placeholder="New Password" required style="width: 100%; box-sizing: border-box;">
         </div>
-        <div id="userDetailContent"></div>
+        
+        <div class="modal-actions">
+            <button class="btn-outline" onclick="closeResetModal()">Cancel</button>
+            <button class="btn-create" style="width: auto; margin: 0; padding: 8px 16px;" id="confirmResetBtn">Save Password</button>
+        </div>
     </div>
 </div>
 
-<div id="deleteModal" class="custom-backdrop" style="display: none;">
-    <div class="modal-content confirmation-box" style="display: block; opacity: 1;">
-        <div class="icon-box danger large" style="margin: 0 auto 15px;">
-            <i class="ph ph-trash"></i>
-        </div>
-        <h3 style="text-align: center;"><%= t.adminUsers.deleteModalTitle %></h3>
-        <p style="text-align: center; color: var(--text-muted);"><%= t.adminUsers.deleteWarning %></p>
-        <div class="modal-actions" style="margin-top: 1.5rem; display: flex; gap: 10px;">
-            <button class="btn-cancel" onclick="closeDeleteModal()" style="flex: 1;"><%= t.common.cancel %></button>
-            <button class="btn-delete" id="confirmDeleteBtn" style="flex: 1;"><%= t.common.delete %></button>
+<div class="custom-backdrop" id="deleteModal">
+    <div class="modal-content-animated" style="border-color: rgba(239, 68, 68, 0.3);">
+        <h3 style="margin-top:0; font-size: 1.1rem; color: var(--danger); display: flex; align-items: center; gap: 8px;"><i class="ph ph-warning"></i> Confirm Deletion</h3>
+        <p style="font-size: 0.9rem; color: var(--text-main); margin-bottom: 20px;">Are you sure you want to delete <strong id="deleteUserName"></strong>?</p>
+        
+        <div class="modal-actions">
+            <button class="btn-outline" onclick="closeDeleteModal()">Cancel</button>
+            <button class="btn-danger" id="confirmDeleteBtn">Delete User</button>
         </div>
     </div>
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const deleteModal = document.getElementById('deleteModal');
-        const detailModal = document.getElementById('userDetailModal');
-        const toastContainer = document.getElementById('toast-container');
-        
-        if(deleteModal) document.body.appendChild(deleteModal);
-        if(detailModal) document.body.appendChild(detailModal);
-        if(toastContainer) document.body.appendChild(toastContainer);
-    });
-
+    // ----- TOAST HELPER -----
     function showToast(message, type = 'success') {
         const container = document.getElementById('toast-container');
+        if (!container) return alert(message);
+        
         const toast = document.createElement('div');
         const icon = type === 'success' ? '<i class="ph ph-check-circle"></i>' : '<i class="ph ph-warning-circle"></i>';
-        toast.className = `toast ${type}`; 
+        toast.className = `toast ${type}`;
         toast.innerHTML = `${icon} <span>${message}</span>`;
         container.appendChild(toast);
-
+        
         setTimeout(() => {
             toast.style.opacity = '0';
             toast.style.transform = 'translateY(-20px)';
@@ -343,101 +406,104 @@
         }, 3000);
     }
 
-    // ----- SEARCH WITH HIGHLIGHT -----
-    const searchInput = document.getElementById('searchInput');
-    const userCards = document.querySelectorAll('.user-card');
-
-    searchInput.addEventListener('input', function() {
-        const term = this.value.toLowerCase().trim();
-
-        userCards.forEach(card => {
-            const name = card.dataset.name || '';
-            const pharmacy = card.dataset.pharmacy || '';
-            const email = card.dataset.email || '';
-            const role = card.dataset.role || '';
-
-            const matches = term === '' || name.includes(term) || pharmacy.includes(term) || email.includes(term) || role.includes(term);
-
-            if (matches) {
-                card.style.display = 'flex';
-                if(term !== '') card.classList.add('highlight');
-                else card.classList.remove('highlight');
+    // ----- SEARCH FILTER -----
+    function filterUsers() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const rows = document.querySelectorAll('.user-card-row');
+        
+        rows.forEach(row => {
+            const name = row.dataset.name || '';
+            const email = row.dataset.email || '';
+            const pharmacy = row.dataset.pharmacy || '';
+            
+            if (name.includes(query) || email.includes(query) || pharmacy.includes(query)) {
+                row.style.display = 'grid'; // Maintain grid layout
             } else {
-                card.style.display = 'none';
-                card.classList.remove('highlight');
+                row.style.display = 'none';
             }
         });
-    });
-
-    // ----- USER DETAIL MODAL -----
-    function openUserDetail(btn) {
-        try {
-            const encodedData = btn.getAttribute('data-user');
-            const user = JSON.parse(decodeURIComponent(encodedData));
-            const joinedDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A';
-            const roleBadge = user.role === 'admin' ? 'approved' : 'pending';
-            const displayRole = user.role === 'admin' ? '<%= t.common.admin %>' : '<%= t.adminRequests.user %>';
-
-            const content = document.getElementById('userDetailContent');
-            content.innerHTML = `
-                ${user.imageURL ? `<img src="${user.imageURL}" alt="${user.name}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; margin:0 auto 1.5rem auto; display:block; border:1px solid var(--glass-border);" />` : ''}
-                <div class="detail-grid">
-                    <p><strong><%= t.common.name %></strong> ${user.name || 'N/A'}</p>
-                    <p><strong><%= t.common.pharmacy %></strong> ${user.pharmacy || 'N/A'}</p>
-                    <p><strong><%= t.common.email %></strong> <a href="mailto:${user.email}" style="color: var(--primary);">${user.email || 'N/A'}</a></p>
-                    <p><strong><%= t.common.role %></strong> <span class="badge ${roleBadge}">${displayRole}</span></p>
-                    <p><strong><%= t.adminUsers.joined %></strong> ${joinedDate}</p>
-                    <p><strong>ID</strong> <code style="font-size:0.75rem; color: var(--text-muted);">${user._id}</code></p>
-                </div>
-            `;
-            
-            document.getElementById('userDetailModal').style.display = 'flex';
-        } catch(err) {
-            console.error("Error reading user data", err);
-        }
     }
 
-    function closeUserDetail() {
-        document.getElementById('userDetailModal').style.display = 'none';
+    // ----- MODAL HANDLERS -----
+    let deleteUserId = null;
+
+    function openResetModal(userId) {
+        document.getElementById('resetUserId').value = userId;
+        document.getElementById('newPassword').value = '';
+        document.getElementById('resetModal').style.display = 'flex';
     }
-    
-    document.getElementById('userDetailModal').addEventListener('click', function(e) {
-        if (e.target === this) closeUserDetail();
-    });
+    function closeResetModal() {
+        document.getElementById('resetModal').style.display = 'none';
+    }
 
-    // ----- BULLETPROOF DELETE NATIVE LOGIC -----
-    let userIdToDelete = null;
-
-    window.openDeleteModal = function(id) {
-        userIdToDelete = id;
+    function openDeleteModal(userId, userName) {
+        deleteUserId = userId;
+        document.getElementById('deleteUserName').innerText = userName;
         document.getElementById('deleteModal').style.display = 'flex';
     }
-
-    window.closeDeleteModal = function() {
-        userIdToDelete = null;
+    function closeDeleteModal() {
         document.getElementById('deleteModal').style.display = 'none';
+        deleteUserId = null;
     }
 
-    document.getElementById('deleteModal').addEventListener('click', function(e) {
-        if (e.target === this) closeDeleteModal();
-    });
+    // Close modals on outside click
+    window.onclick = function(event) {
+        const resetModal = document.getElementById('resetModal');
+        const deleteModal = document.getElementById('deleteModal');
+        if (event.target === resetModal) closeResetModal();
+        if (event.target === deleteModal) closeDeleteModal();
+    }
 
-    document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
-        if (!userIdToDelete) return;
+    // ----- API CALLS -----
+    document.getElementById('confirmResetBtn').addEventListener('click', async function() {
+        const userId = document.getElementById('resetUserId').value;
+        const newPassword = document.getElementById('newPassword').value;
         
+        if (!newPassword || newPassword.length < 6) {
+            return showToast('Password must be at least 6 characters.', 'error');
+        }
+
         const originalText = this.innerText;
-        this.innerText = '...';
+        this.innerHTML = '<i class="ph ph-spinner ph-spin"></i> Saving...';
         this.disabled = true;
 
         try {
-            const response = await fetch(`/admin/users/${userIdToDelete}`, { method: 'DELETE' });
-            const result = await response.json();
-
-            if (response.ok) {
-                const card = document.getElementById(`user-card-${userIdToDelete}`);
-                if (card) card.remove();
-                
+            const res = await fetch(`/admin/users/${userId}/reset-password`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ newPassword })
+            });
+            const result = await res.json();
+            
+            if (res.ok) {
                 showToast('<%= t.common.success %>', 'success');
+                closeResetModal();
+            } else {
+                showToast(result.message || '<%= t.common.error %>', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('<%= t.common.error %>', 'error');
+        } finally {
+            this.innerText = originalText;
+            this.disabled = false;
+        }
+    });
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
+        if (!deleteUserId) return;
+        
+        const originalText = this.innerText;
+        this.innerHTML = '<i class="ph ph-spinner ph-spin"></i> Deleting...';
+        this.disabled = true;
+
+        try {
+            const res = await fetch(`/admin/users/${deleteUserId}`, { method: 'DELETE' });
+            const result = await res.json();
+            
+            if (res.ok) {
+                showToast('<%= t.common.success %>', 'success');
+                setTimeout(() => window.location.reload(), 1000);
             } else {
                 showToast(result.message || '<%= t.common.error %>', 'error');
             }
@@ -456,7 +522,7 @@
         e.preventDefault();
         const formData = new FormData(this);
         const submitBtn = this.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerText;
+        const originalText = submitBtn.innerHTML;
         
         submitBtn.innerHTML = '<i class="ph ph-spinner ph-spin"></i> <%= t.common.processing %>';
         submitBtn.disabled = true;
@@ -467,7 +533,7 @@
             
             if (response.ok) {
                 showToast('<%= t.common.success %>', 'success');
-                setTimeout(() => window.location.reload(), 1000);
+                setTimeout(() => window.location.reload(), 800);
             } else {
                 showToast(result.message || '<%= t.common.error %>', 'error');
                 submitBtn.innerHTML = originalText;

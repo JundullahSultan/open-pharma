@@ -129,6 +129,7 @@ html[lang="fa"] {
   -webkit-font-smoothing: antialiased;
   scrollbar-width: thin;
   scrollbar-color: var(--surface-light) transparent;
+  font-family: var(--main-font);
 }
 
 ::-webkit-scrollbar {

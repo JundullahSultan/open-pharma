@@ -6,22 +6,22 @@
         <div class="menu-grid">
             <a href="/admin/requests" class="menu-item <%= page === 'requests' ? 'active' : '' %>">
                 <div class="icon-box"><i class="ph ph-hand-waving"></i></div>
-                <span><%= t.common.requests %></span>
+                <span>Requests</span>
             </a>
 
             <a href="/admin/ai" class="menu-item <%= page === 'ai' ? 'active' : '' %>">
                 <div class="icon-box"><i class="ph ph-robot"></i></div>
-                <span><%= t.aiAnalyst.title %></span>
+                <span>AI Analyst</span>
             </a>
 
             <a href="/admin/settings" class="menu-item">
                 <div class="icon-box"><i class="ph ph-gear"></i></div>
-                <span><%= t.common.settings %></span>
+                <span>Settings</span>
             </a>
 
             <a href="/admin/logout" class="menu-item">
                 <div class="icon-box danger"><i class="ph ph-sign-out"></i></div>
-                <span><%= t.common.logout %></span>
+                <span>Logout</span>
             </a>
         </div>
     </div>
@@ -29,29 +29,84 @@
     <nav class="mobile-bottom-nav">
         <a href="/admin/dashboard" class="nav-item <%= page === 'dashboard' ? 'active' : '' %>">
             <i class="ph ph-squares-four"></i>
-            <span><%= t.home %></span>
+            <span>Home</span>
         </a>
 
         <a href="/admin/users" class="nav-item <%= page === 'users' ? 'active' : '' %>">
             <i class="ph ph-users"></i>
-            <span><%= t.users %></span>
+            <span>Users</span>
         </a>
 
         <a href="/admin/medicines" class="nav-item <%= page === 'medicines' ? 'active' : '' %>">
             <div class="fab"><i class="ph ph-flask"></i></div>
-            <span><%= t.common.medicines %></span>
+            <span>Meds</span>
         </a>
 
         <a href="/admin/orders" class="nav-item <%= page === 'orders' ? 'active' : '' %>">
             <i class="ph ph-package"></i>
-            <span><%= t.orders %></span>
+            <span>Orders</span>
         </a>
 
         <button class="nav-item" onclick="toggleAdminMenu()" style="background:var(--bg-dark); border:none; color: inherit; font-family: inherit;">
             <i class="ph ph-dots-three-circle" id="adminMoreIcon"></i>
-            <span><%= t.common.more %></span>
+            <span>More</span>
         </button>
     </nav>
+
+    <style>
+      /* Global Page Loader Overlay */
+      #global-page-loader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: var(--bg-dark);
+        z-index: 999999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s ease, visibility 0.2s ease;
+      }
+      
+      #global-page-loader.show {
+        opacity: 0.85; 
+        visibility: visible;
+        pointer-events: all;
+      }
+    
+      /* Custom Orbital Loader */
+      .loader {
+        width: 80px; 
+        height: 35px;
+        border: 3px solid var(--primary); 
+        box-sizing: border-box;
+        border-radius: 50%;
+        display: grid;
+        animation: l2 2s infinite linear;
+      }
+      .loader:before,
+      .loader:after {
+        content: "";
+        grid-area: 1/1;
+        border: inherit;
+        border-radius: 50%;
+        animation: inherit;
+        animation-duration: 3s;
+      }
+      .loader:after {
+        --s:-1;
+      }
+      @keyframes l2 {
+         100% {transform:rotate(calc(var(--s,1)*1turn))}
+      }
+    </style>
+    
+    <div id="global-page-loader">
+      <div class="loader"></div>
+    </div>
 
     <script>
         // Toggle Logic for Admin Menu
@@ -80,7 +135,7 @@
             }
         });
 
-        // Theme Switcher Logic (Existing)
+        // Theme Switcher Logic
         document.addEventListener('DOMContentLoaded', () => {
             const toggleBtn = document.getElementById('themeToggle');
             const themeIcon = document.getElementById('themeIcon');
@@ -115,20 +170,34 @@
                     themeIcon.style.color = "var(--text-main)";
                 }
             }
+
+            // GLOBAL LOADER LOGIC
+            const loader = document.getElementById('global-page-loader');
+            window.showGlobalLoader = () => loader.classList.add('show');
+            window.hideGlobalLoader = () => loader.classList.remove('show');
+
+            window.addEventListener('beforeunload', showGlobalLoader);
+            window.addEventListener('pageshow', hideGlobalLoader);
+
+            document.querySelectorAll('a').forEach(link => {
+              link.addEventListener('click', function() {
+                const href = this.getAttribute('href');
+                const target = this.getAttribute('target');
+                if (href && !href.startsWith('#') && !href.startsWith('javascript') && target !== '_blank') {
+                  showGlobalLoader();
+                }
+              });
+            });
         });
     </script>
     <script src="/js/distroyGoBack.js"></script>
     <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then(registration => {
-          console.log('ServiceWorker registration successful with scope: ', registration.scope);
-        }, err => {
-          console.log('ServiceWorker registration failed: ', err);
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .catch(err => console.log('ServiceWorker registration failed: ', err));
         });
-    });
-  }
-</script>
+      }
+    </script>
 </body>
 </html>

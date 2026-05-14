@@ -1,28 +1,30 @@
 <%- include('../partials/user-header', { title: t.userRequest.pageTitle, page: 'request' }) %>
 
 <style>
-  /* ===== REQUEST FORM – Unified with Global Theme ===== */
-
+  /* ===== REQUEST FORM – ULTRA COMPACT & FLOATING LABELS ===== */
   .request-form-card {
-    background: var(--surface-dark);
-    border: 1px solid var(--glass-border);
-    border-radius: 12px;
-    padding: 1.75rem 1.5rem;
-    box-shadow: var(--shadow-sm);
-    margin-bottom: 2rem;
+    background: transparent; 
+    padding: 0.25rem;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .request-form-header {
+    margin-bottom: 1.25rem;
+    text-align: center;
   }
 
   .request-form-header h2 {
     font-size: 1.5rem;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--text-main);
     margin-bottom: 0.25rem;
+    letter-spacing: -0.5px;
   }
 
   .request-form-sub {
     color: var(--text-muted);
-    font-size: 0.9rem;
-    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
   }
 
   /* Cards container */
@@ -33,187 +35,214 @@
     margin-bottom: 1.5rem;
   }
 
-  /* Individual request card – matches order‑card style */
+  /* Individual request card - Reduced padding heavily */
   .request-card-item {
     background: var(--surface-dark);
     border: 1px solid var(--glass-border);
     border-radius: 12px;
-    padding: 1.25rem;
+    padding: 1rem; /* Reduced from 1.5rem */
     display: flex;
     flex-direction: column;
-    gap: 0.85rem;
-    position: relative;
+    gap: 0.85rem; /* Reduced from 1.25rem */
     box-shadow: var(--shadow-sm);
-    transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   }
 
   .request-card-item:hover {
     box-shadow: var(--shadow-md);
+    border-color: rgba(59, 130, 246, 0.3);
   }
 
-  /* Card number badge */
+  /* Card Header */
+  .card-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 0.5rem;
+  }
+
   .card-number {
-    position: absolute;
-    top: 0.65rem;
-    right: 0.75rem;
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .card-number i {
+    color: var(--primary);
+    font-size: 1.1rem;
+  }
+
+  .card-delete-icon {
+    background: transparent;
+    border: none;
     color: var(--text-muted);
-    background: var(--surface-light);
-    padding: 0.2rem 0.65rem;
-    border-radius: 20px;
-    border: 1px solid var(--glass-border);
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all var(--transition-fast);
   }
 
-  html[lang="ps"] .card-number {
-    right: auto;
-    left: 0.75rem;
+  .card-delete-icon:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
   }
 
-  html[lang="fa"] .card-number {
-    right: auto;
-    left: 0.75rem;
-  }
-
-  /* Field layout inside card */
+  /* Field Grid - Reduced gaps */
   .card-fields {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem; /* Tighter gap */
+  }
+
+  @media (min-width: 600px) {
+    .card-fields {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .field-full {
+      grid-column: 1 / -1;
+    }
+  }
+
+  /* ==============================
+     FLOATING LABELS UI
+     ============================== */
+  .floating-field {
+    position: relative;
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
   }
 
-  .card-field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-  }
-
-  .card-field label {
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-  }
-
-  .card-field input,
-  .card-field textarea {
+  .floating-field input,
+  .floating-field textarea {
     width: 100%;
-    padding: 0.65rem 0.8rem;
+    /* Create space at the top for the floating label */
+    padding: 1.15rem 0.75rem 0.35rem 0.75rem; 
     border: 1px solid var(--glass-border);
     border-radius: 8px;
     font-size: 0.95rem;
     font-family: inherit;
-    background: var(--surface-dark);
+    background: var(--bg-dark);
     color: var(--text-main);
     outline: none;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .floating-field textarea {
     resize: vertical;
+    padding-top: 1.25rem;
   }
 
-  .card-field input::placeholder,
-  .card-field textarea::placeholder {
-    color: var(--text-muted);
-    opacity: 0.7;
-  }
-
-  .card-field input:focus,
-  .card-field textarea:focus {
+  .floating-field input:focus,
+  .floating-field textarea:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
   }
 
-  /* Delete button inside card */
-  .card-delete {
-    align-self: flex-end;
-    background: transparent;
-    border: 1px solid var(--glass-border);
+  .floating-field label {
+    position: absolute;
+    /* Center it perfectly like a standard placeholder */
+    top: 50%;
+    left: 0.75rem;
+    transform: translateY(-50%);
+    font-size: 0.9rem;
     color: var(--text-muted);
-    cursor: pointer;
-    padding: 0.4rem 0.8rem;
-    border-radius: 8px;
-    transition: all var(--transition-fast);
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: 0.85rem;
+    pointer-events: none;
+    transition: all 0.2s ease;
   }
 
-  .card-delete:hover {
-    background: rgba(239,68,68,0.1);
+  .floating-field textarea ~ label {
+    top: 1rem;
+    transform: none;
+  }
+
+  /* When input is focused, OR when the input has text (not showing the blank placeholder) -> Float the label */
+  .floating-field input:focus ~ label,
+  .floating-field input:not(:placeholder-shown) ~ label,
+  .floating-field textarea:focus ~ label,
+  .floating-field textarea:not(:placeholder-shown) ~ label {
+    top: 0.4rem;
+    transform: translateY(0);
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--primary);
+  }
+
+  .floating-field input:not(:focus):not(:placeholder-shown) ~ label,
+  .floating-field textarea:not(:focus):not(:placeholder-shown) ~ label {
+    color: var(--text-muted); /* Keep floating but revert color if not focused */
+  }
+
+  .floating-field label span.required {
     color: var(--danger);
-    border-color: var(--danger);
   }
 
   /* Validation highlight */
   .request-card-item.invalid {
-    border-color: #fca5a5;
-    box-shadow: 0 0 0 3px rgba(239,68,68,0.1);
+    border-color: var(--danger);
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
   }
 
-  /* Form actions row */
+  /* Form actions */
   .form-actions {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
     gap: 1rem;
     margin-top: 0.5rem;
   }
 
-  /* Add row button – same as btn-text */
   .add-row-btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    font-weight: 500;
-    color: var(--text-muted);
-    background: transparent;
-    border: 1px solid var(--glass-border);
+    gap: 0.5rem;
+    font-weight: 600;
+    color: var(--primary);
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px dashed rgba(59, 130, 246, 0.4);
     cursor: pointer;
-    padding: 0.6rem 1rem;
-    border-radius: 8px;
-    transition: background var(--transition-fast), color var(--transition-fast);
+    padding: 0.75rem 1.25rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
   }
 
   .add-row-btn:hover {
-    background: rgba(255,255,255,0.05);
-    color: var(--text-main);
+    background: rgba(59, 130, 246, 0.15);
+    border-style: solid;
   }
 
-  /* Submit button – matches btn-primary */
   .btn-submit {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    justify-content: center;
+    gap: 0.6rem;
     background: var(--primary);
     color: white;
     border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
+    padding: 0.75rem 1.75rem;
+    border-radius: 10px;
     font-weight: 600;
-    font-size: 1rem;
-    font-family: inherit;
+    font-size: 0.95rem;
     cursor: pointer;
-    transition: background var(--transition-fast), transform var(--transition-fast);
+    transition: all 0.2s ease;
   }
 
   .btn-submit:hover {
     background: #2563eb;
-    transform: translateY(-1px);
   }
 
-  .btn-submit:active {
-    transform: translateY(0);
-  }
-
-  /* Responsive tweaks */
-  @media (max-width: 480px) {
-    .request-form-card {
-      padding: 1.25rem 1rem;
-    }
+  @media (max-width: 600px) {
     .form-actions {
-      flex-direction: column;
+      flex-direction: column-reverse;
       align-items: stretch;
     }
     .btn-submit, .add-row-btn {
@@ -225,18 +254,16 @@
 
 <section class="request-form-card">
   <div class="request-form-header">
-    <h2><%= t.userRequest.detailsTitle %></h2>
-    <p class="request-form-sub"><%= t.userRequest.subtitle %> (Multiple allowed)</p>
+    <h2><i class="ph ph-hand-waving"></i> <%= t.userRequest.detailsTitle %></h2>
+    <p class="request-form-sub"><%= t.userRequest.subtitle %></p>
   </div>
 
-  <!-- Container for dynamically added cards -->
   <div id="cardsContainer" class="cards-container">
-    <!-- Cards are inserted by JavaScript -->
-  </div>
+    </div>
 
   <div class="form-actions">
     <button type="button" class="add-row-btn" onclick="addCard()">
-      <i class="ph ph-plus-circle"></i> Add Row
+      <i class="ph ph-plus"></i> Add Another Item
     </button>
     <button type="button" class="btn-submit" onclick="submitSheet()">
       <i class="ph ph-paper-plane-right"></i> <%= t.userRequest.submitBtn %>
@@ -251,6 +278,7 @@
 <%- include('../partials/mobile-nav', { page: 'request' }) %>
 
 <script>
+  // Mobile Nav Highlighting
   const currentPath = window.location.pathname;
   document.querySelectorAll('.mobile-bottom-nav a').forEach((link) => {
     if (link.getAttribute('href') === currentPath) link.classList.add('active');
@@ -263,45 +291,54 @@
     cardCount++;
     const card = document.createElement('div');
     card.className = 'request-card-item';
-    card.dataset.cardIndex = cardCount;
-
+    
+    // Dynamic HTML for the card - Notice placeholder=" " is required for the floating CSS trick to work
     card.innerHTML = `
-      <div class="card-number">${cardCount}</div>
+      <div class="card-top-row">
+        <div class="card-number">
+          <i class="ph ph-prescription"></i> Item <span class="num-text">${cardCount}</span>
+        </div>
+        <button type="button" class="card-delete-icon" onclick="deleteCard(this)" title="Remove Item">
+          <i class="ph ph-trash"></i>
+        </button>
+      </div>
+
       <div class="card-fields">
-        <div class="card-field">
-          <label><%= t.userRequest.medName %> *</label>
-          <input type="text" name="medicineName" placeholder="e.g. Panadol Extra" required>
+        <div class="floating-field">
+          <input type="text" name="medicineName" placeholder=" " required>
+          <label><%= t.userRequest.medName %> <span class="required">*</span></label>
         </div>
-        <div class="card-field">
-          <label><%= t.userRequest.companyName %> *</label>
-          <input type="text" name="companyName" placeholder="e.g. GSK" required>
+
+        <div class="floating-field">
+          <input type="text" name="companyName" placeholder=" " required>
+          <label><%= t.userRequest.companyName %> <span class="required">*</span></label>
         </div>
-        <div class="card-field" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-          <div class="card-field">
-            <label><%= t.common.quantity %> *</label>
-            <input type="number" name="quantity" placeholder="e.g. 50" min="1" required>
-          </div>
-          <div class="card-field">
-            <label><%= t.userRequest.shapeDose %> *</label>
-            <input type="text" name="shapeAndDose" placeholder="Tablet 500mg" required>
-          </div>
+
+        <div class="floating-field">
+          <input type="number" name="quantity" placeholder=" " min="1" required>
+          <label><%= t.common.quantity %> <span class="required">*</span></label>
         </div>
-        <div class="card-field">
+
+        <div class="floating-field">
+          <input type="text" name="shapeAndDose" placeholder=" " required>
+          <label><%= t.userRequest.shapeDose %> <span class="required">*</span></label>
+        </div>
+
+        <div class="floating-field">
+          <input type="text" name="tradeName" placeholder=" ">
           <label><%= t.userRequest.tradeName %></label>
-          <input type="text" name="tradeName" placeholder="Brand name">
         </div>
-        <div class="card-field">
+
+        <div class="floating-field">
+          <input type="text" name="scientificName" placeholder=" ">
           <label><%= t.userRequest.scientificName %></label>
-          <input type="text" name="scientificName" placeholder="Generic name">
         </div>
-        <div class="card-field">
+
+        <div class="floating-field field-full">
+          <textarea name="description" rows="2" placeholder=" "></textarea>
           <label><%= t.userRequest.description %></label>
-          <input type="text" name="description" placeholder="Optional notes...">
         </div>
       </div>
-      <button type="button" class="card-delete" onclick="deleteCard(this)">
-        <i class="ph ph-trash"></i> Remove
-      </button>
     `;
 
     cardsContainer.appendChild(card);
@@ -310,9 +347,12 @@
   function deleteCard(btn) {
     const card = btn.closest('.request-card-item');
     if (!card) return;
+    
+    // Animate out
     card.style.opacity = '0';
     card.style.transform = 'scale(0.95)';
-    card.style.transition = 'all 0.2s';
+    card.style.transition = 'all 0.2s ease';
+    
     setTimeout(() => {
       card.remove();
       updateCardNumbers();
@@ -322,13 +362,13 @@
   function updateCardNumbers() {
     const cards = cardsContainer.querySelectorAll('.request-card-item');
     cards.forEach((card, index) => {
-      card.querySelector('.card-number').textContent = index + 1;
+      card.querySelector('.num-text').textContent = index + 1;
     });
     cardCount = cards.length;
   }
 
-  // Initialize with 3 cards
-  addCard(); addCard(); addCard();
+  // INITIALIZE WITH ONLY 1 CARD
+  addCard(); 
 
   async function submitSheet() {
     const cards = document.querySelectorAll('.request-card-item');
@@ -341,8 +381,8 @@
       const qty = card.querySelector('[name="quantity"]').value;
       const shape = card.querySelector('[name="shapeAndDose"]').value.trim();
 
-      if (medName) {
-        if (!company || !qty || !shape) {
+      if (medName || company || qty || shape) { // Check if user typed anything in this row
+        if (!medName || !company || !qty || !shape) {
           isValid = false;
           card.classList.add('invalid');
         } else {
@@ -357,13 +397,11 @@
             description: card.querySelector('[name="description"]').value.trim(),
           });
         }
-      } else {
-        card.classList.remove('invalid');
       }
     });
 
     if (!isValid) {
-      return alert('Please fill all required (*) fields in your rows.');
+      return alert('Please fill all required (*) fields in the highlighted items.');
     }
 
     if (requestsData.length === 0) {
@@ -384,15 +422,16 @@
 
       if (res.ok) {
         btn.style.backgroundColor = 'var(--success)';
-        btn.innerHTML = `<i class="ph ph-check"></i> <%= t.userRequest.sentSuccess %>`;
+        btn.innerHTML = `<i class="ph ph-check-circle"></i> <%= t.userRequest.sentSuccess %>`;
         setTimeout(() => (window.location.href = '/user/my-requests'), 1000);
       } else {
-        alert('Error sending request');
+        alert('Error sending request. Please try again.');
         btn.innerHTML = originalHTML;
         btn.disabled = false;
       }
     } catch (err) {
-      alert('Network error');
+      console.error(err);
+      alert('Network error. Check your connection.');
       btn.innerHTML = originalHTML;
       btn.disabled = false;
     }

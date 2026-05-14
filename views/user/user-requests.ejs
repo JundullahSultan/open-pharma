@@ -1,61 +1,251 @@
 <%- include('../partials/user-header', { title: t.userMyRequests.title, page: 'my-requests' }) %>
 
-<!-- New Request Button (global style) -->
-<div class="my-requests-action">
-  <a href="/user/request" class="btn-primary">
-    <i class="ph ph-plus"></i> <%= t.userMyRequests.btnNewRequest %>
+<style>
+  /* ==============================
+     REQUESTS LIST – CARD BASED (MOBILE FIRST)
+     ============================== */
+  .requests-header-action {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .requests-header-action h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin: 0;
+    display: none;
+  }
+
+  .btn-new-request {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1.2rem;
+    background: var(--primary);
+    color: white;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .btn-new-request:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+  }
+
+  .requests-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .request-card {
+    background: var(--surface-dark);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .request-card:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-md);
+  }
+
+  .req-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .req-title-area {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .req-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin: 0;
+  }
+
+  .req-shape {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    background: var(--surface-light);
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    display: inline-block;
+    width: fit-content;
+    border: 1px solid var(--glass-border);
+  }
+
+  .req-company {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.25rem;
+  }
+
+  .req-status {
+    flex-shrink: 0;
+  }
+
+  .req-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    background: var(--bg-dark);
+    padding: 0.85rem;
+    border-radius: 8px;
+    border: 1px solid var(--glass-border);
+  }
+
+  .req-detail-box {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .req-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .req-value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    background: var(--surface-dark);
+    border-radius: 12px;
+    border: 1px dashed var(--glass-border);
+  }
+
+  .empty-state i {
+    font-size: 3rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+  }
+
+  .empty-state p {
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+  }
+
+  /* Two columns on tablets/desktops */
+  @media (min-width: 768px) {
+    .requests-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>
+
+<div class="requests-header-action">
+  <h2><i class="ph ph-notebook"></i> <%= t.userMyRequests.title || 'My Requests' %></h2>
+  <a href="/user/request" class="btn-new-request">
+    <i class="ph ph-plus"></i> <%= t.userMyRequests.btnNewRequest || 'New Request' %>
   </a>
 </div>
 
-<!-- Requests List (responsive card grid) -->
 <div class="requests-container">
   <% if (requests && requests.length > 0) { %>
     <% requests.forEach(req => { 
-      const date = new Date(req.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-      // Map status to one of the global badge classes: pending, approved, cancelled
-      let statusClass = (req.status || '').toLowerCase();
+      const date = new Date(req.createdAt).toLocaleDateString(lang === 'en' ? 'en-US' : 'fa-IR', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+      
+      let statusClass = (req.status || 'Pending').toLowerCase();
       if (statusClass === 'rejected') statusClass = 'cancelled';
       const badgeClass = ['pending', 'approved', 'cancelled'].includes(statusClass) ? statusClass : 'pending';
     %>
       <div class="request-card">
-        <div class="request-card__main">
-          <div class="request-card__name">
-            <strong><%= req.medicineName %></strong>
-            <span class="request-card__shape"><%= req.shapeAndDose %></span>
+        
+        <div class="req-header">
+          <div class="req-title-area">
+            <h3 class="req-title"><%= req.medicineName %></h3>
+            <span class="req-shape"><%= req.shapeAndDose %></span>
+            <div class="req-company">
+              <i class="ph ph-buildings"></i> <%= req.companyName %>
+            </div>
           </div>
-          <div class="request-card__company">
-            <i class="ph ph-building"></i> <%= req.companyName %>
+          <div class="req-status">
+            <span class="badge <%= badgeClass %>"><%= req.status || 'Pending' %></span>
           </div>
         </div>
-        <div class="request-card__meta">
-          <div class="request-card__qty" title="<%= t.userMyRequests.thQty %>">
-            <i class="ph ph-cube"></i> <%= req.quantity %>
+
+        <div class="req-details-grid">
+          <div class="req-detail-box">
+            <span class="req-label"><%= t.userMyRequests.thQty || 'Quantity' %></span>
+            <span class="req-value">
+              <i class="ph ph-cube"></i> <%= req.quantity %>
+            </span>
           </div>
-          <div class="request-card__date" title="<%= t.userMyRequests.thDate %>">
-            <i class="ph ph-calendar"></i> <%= date %>
+          <div class="req-detail-box">
+            <span class="req-label"><%= t.userMyRequests.thDate || 'Date Requested' %></span>
+            <span class="req-value">
+              <i class="ph ph-calendar-blank"></i> <%= date %>
+            </span>
           </div>
-          <span class="badge <%= badgeClass %>"><%= req.status %></span>
         </div>
+
       </div>
     <% }) %>
   <% } else { %>
-    <!-- Empty State -->
-    <div class="empty-state">
-      <i class="ph ph-notebook empty-state__icon"></i>
-      <p class="empty-state__text"><%= t.userMyRequests.noRequestsIcon %></p>
+    <div style="grid-column: 1 / -1;">
+      <div class="empty-state">
+        <i class="ph ph-hand-waving"></i>
+        <p><%= t.userMyRequests.noRequestsIcon || 'You have not made any requests yet.' %></p>
+        <a href="/user/request" class="btn-primary" style="display: inline-block; text-decoration: none;">
+          <%= t.userMyRequests.btnNewRequest || 'Create your first request' %>
+        </a>
+      </div>
     </div>
   <% } %>
 </div>
 
+<div class="mobile-spacer" style="height: 100px;"></div>
+
 <%- include('../partials/mobile-nav', { page: 'my-requests' }) %>
 
 <script>
-  // Highlight active mobile nav link
-  const currentPath = window.location.pathname;
-  document.querySelectorAll('.mobile-bottom-nav a').forEach(link => {
-    if (link.getAttribute('href') === currentPath) {
-      link.classList.add('active');
-    }
+  document.addEventListener('DOMContentLoaded', () => {
+    // Mobile navigation highlighting
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('.mobile-bottom-nav a').forEach(link => {
+      if (link.getAttribute('href') === currentPath) {
+        link.classList.add('active');
+      }
+    });
   });
 </script>
 

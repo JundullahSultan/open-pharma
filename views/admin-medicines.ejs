@@ -1,181 +1,406 @@
 <%- include('partials/admin-header', { title: t.adminMedicines.title, page: 'medicines' }) %>
 
-<section class="card mb-2">
-    <div class="card-header">
-        <h2><%= t.adminMedicines.addNew %></h2>
-    </div>
-    <form class="grid-form" id="createMedicineForm">
-        <div class="form-group">
-            <label><%= t.userRequest.medName %></label>
-            <input type="text" name="name" placeholder="e.g. Aspirin" required>
-        </div>
-        <div class="form-group">
-            <label><%= t.adminMedicines.company %></label>
-            <input type="text" name="companyName" placeholder="e.g. Bayer" required>
-        </div>
-        <div class="form-group">
-            <label><%= t.common.price %> (؋)</label>
-            <input type="number" name="price" step="0.01" placeholder="0.00" required>
-        </div>
-        <div class="form-group">
-            <label><%= t.adminMedicines.availableStock %></label>
-            <input type="number" name="stockQuantity" placeholder="06" required>
-        </div>
-        <div class="form-group">
-            <label><%= t.adminMedicines.uploadImage %></label>
-            <input type="file" name="imageURL" accept="image/*"> 
-        </div>
-        
-        <div id="uploadProgressContainer" style="display: none; margin-bottom: 15px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                <span style="font-size: 0.85rem; color: var(--text-muted);"><%= t.adminMedicines.uploading %></span>
-                <span id="progressText" style="font-size: 0.85rem; font-weight: bold;">0%</span>
-            </div>
-            <div style="width: 100%; height: 6px; background: var(--surface-hover); border-radius: 3px; overflow: hidden;">
-                <div id="progressBar" style="width: 0%; height: 100%; background: var(--primary); transition: width 0.2s;"></div>
-            </div>
-        </div>
-        
-        <div class="form-group full-width">
-            <button type="submit" class="btn-primary addBtn"><%= t.adminMedicines.addBtn %></button>
-        </div>
-    </form>
-</section>
+<style>
+    /* ===== COMPACT FORM GRID WITH FLOATING LABELS ===== */
+    .create-medicine-card {
+        background: linear-gradient(135deg, var(--surface-dark) 0%, rgba(59, 130, 246, 0.05) 100%);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: 14px;
+        padding: 16px;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow-sm);
+    }
+    .create-medicine-card h2 {
+        margin-top: 0;
+        margin-bottom: 16px;
+        font-size: 1.15rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .create-medicine-card h2 i { color: var(--primary); }
 
-<section style="margin-top: 2rem;">
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 1rem;">
-        <% medicines.forEach(med => { %>
-            <div class="product-card" id="row-<%= med._id %>" style="cursor: pointer; display: flex; flex-direction: column;" onclick="document.getElementById('view-btn-<%= med._id %>').click()">
-                <div class="product-img" style="height: 130px;">
-                    <img src="<%= med.imageURL %>" alt="<%= med.name %>" style="width: 100%; height: 100%; object-fit: cover;">
-                </div>
-                <div style="padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; flex: 1;">
-                    <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%;">
-                        <%= med.companyName %>
-                    </span>
-                    <button type="button" id="view-btn-<%= med._id %>" class="view-btn" style="background: rgba(59, 130, 246, 0.1); border: none; color: var(--primary); cursor: pointer; font-size: 1.2rem; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" 
-                            data-id="<%= med._id %>"
-                            data-name="<%= med.name %>"
-                            data-company="<%= med.companyName %>"
-                            data-price="<%= med.price %>"
-                            data-stock="<%= med.stockQuantity %>"
-                            data-image="<%= med.imageURL %>"
-                            onclick="event.stopPropagation(); openDetailsModal(this)">
-                        <i class="ph ph-eye"></i>
-                    </button>
-                </div>
-            </div>
-        <% }) %>
-    </div>
-</section>
+    .grid-form-compact {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    @media (min-width: 600px) {
+        .grid-form-compact { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width: 992px) {
+        .grid-form-compact { grid-template-columns: repeat(3, 1fr); }
+        .field-full-width { grid-column: span 3; }
+    }
+
+    /* Floating Labels Styling */
+    .floating-field {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+    .floating-field input, .floating-field textarea {
+        width: 100%;
+        padding: 18px 12px 6px 12px;
+        background: var(--bg-dark);
+        border: 1px solid var(--glass-border);
+        border-radius: 8px;
+        color: var(--text-main);
+        font-size: 0.9rem;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        box-sizing: border-box;
+    }
+    .floating-field input:focus, .floating-field textarea:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+    .floating-field label {
+        position: absolute;
+        top: 50%;
+        left: 12px;
+        transform: translateY(-50%);
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        pointer-events: none;
+        transition: all 0.2s ease;
+    }
+    .floating-field textarea ~ label {
+        top: 18px;
+        transform: none;
+    }
+    /* Magic float triggers */
+    .floating-field input:focus ~ label,
+    .floating-field input:not(:placeholder-shown) ~ label,
+    .floating-field textarea:focus ~ label,
+    .floating-field textarea:not(:placeholder-shown) ~ label {
+        top: 4px;
+        transform: translateY(0);
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+    .floating-field input:not(:focus):not(:placeholder-shown) ~ label,
+    .floating-field textarea:not(:focus):not(:placeholder-shown) ~ label {
+        color: var(--text-muted);
+    }
+
+    /* Custom File Input Stylings */
+    .file-upload-box {
+        position: relative;
+        display: flex;
+        align-items: center;
+        background: var(--bg-dark);
+        border: 1px dashed var(--glass-border);
+        border-radius: 8px;
+        padding: 8px 12px;
+        height: 44px;
+        box-sizing: border-box;
+        cursor: pointer;
+    }
+    .file-upload-box:hover { border-color: var(--primary); }
+    .file-upload-box input[type="file"] {
+        position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
+    }
+    .file-upload-box span { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+
+    .btn-submit-med {
+        grid-column: 1 / -1;
+        background: var(--primary);
+        color: white; border: none; padding: 10px; border-radius: 8px;
+        font-weight: 600; font-size: 0.95rem; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 6px;
+        transition: background 0.2s ease;
+    }
+    .btn-submit-med:hover { background: #2563eb; }
+
+    /* Progress bar alignment */
+    .progress-bar-wrapper {
+        grid-column: 1 / -1;
+        background: var(--bg-dark);
+        border-radius: 4px;
+        height: 6px;
+        overflow: hidden;
+        display: none;
+        border: 1px solid var(--glass-border);
+    }
+    .progress-bar-fill { height: 100%; width: 0%; background: var(--primary); transition: width 0.1s ease; }
+
+    /* ===== ULTRA DENSE MEDICINE GRID ===== */
+    .medicine-dense-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    @media (min-width: 600px) { .medicine-dense-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 900px) { .medicine-dense-grid { grid-template-columns: repeat(4, 1fr); } }
+    @media (min-width: 1200px) { .medicine-dense-grid { grid-template-columns: repeat(6, 1fr); } }
+
+    .med-card {
+        background: linear-gradient(145deg, var(--surface-dark) 0%, rgba(255,255,255,0.01) 100%);
+        border: 1px solid var(--glass-border);
+        border-radius: 12px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: var(--shadow-sm);
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .med-card:hover {
+        border-color: var(--primary);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
+    }
+
+    .med-img-box {
+        width: 100%;
+        aspect-ratio: 1;
+        background: var(--surface-light);
+        position: relative;
+        border-bottom: 1px solid var(--glass-border);
+    }
+    .med-img-box img { width: 100%; height: 100%; object-fit: cover; }
+    .med-img-fallback {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        font-size: 2rem; font-weight: 800; color: var(--text-muted); opacity: 0.4;
+    }
+
+    .med-content-box {
+        padding: 8px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        flex: 1;
+    }
+    .med-title {
+        font-size: 0.95rem; font-weight: 600; color: var(--text-main); margin: 0;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .med-company {
+        font-size: 0.75rem; color: var(--text-muted); margin: 0;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .med-meta-row {
+        display: flex; justify-content: space-between; align-items: center; margin-top: 4px;
+    }
+    .med-price { font-weight: 800; color: var(--primary); font-size: 0.95rem; }
+    
+    .med-stock-tag {
+        font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px;
+        background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.15);
+    }
+    .med-stock-tag.out {
+        background: rgba(239, 68, 68, 0.12); color: #f87171; border-color: rgba(239,68,68,0.15);
+    }
+
+    /* Miniature Actions Footer */
+    .med-card-footer {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-top: 6px; padding-top: 8px; border-top: 1px dashed var(--glass-border);
+    }
+    .med-action-btn-group { display: flex; gap: 6px; }
+    .med-mini-btn {
+        width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--glass-border);
+        background: var(--surface-light); color: var(--text-muted);
+        display: flex; align-items: center; justify-content: center; cursor: pointer;
+        transition: all 0.2s ease; font-size: 0.95rem;
+    }
+    .med-mini-btn:hover { color: var(--primary); background: rgba(59, 130, 246, 0.15); border-color: var(--primary); }
+    .med-mini-btn.danger:hover { color: var(--danger); background: rgba(239, 68, 68, 0.15); border-color: var(--danger); }
+    .med-mini-btn.chevron.open i { transform: rotate(180deg); }
+    .med-mini-btn.chevron i { transition: transform 0.2s ease; }
+
+    /* Collapsible content segment */
+    .med-collapsible-desc {
+        max-height: 0; overflow: hidden; background: var(--bg-dark);
+        transition: max-height 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;
+    }
+    .med-collapsible-desc.show { max-height: 120px; border-top: 1px solid var(--glass-border); }
+
+    /* Modals CSS adjustments */
+    .custom-backdrop {
+        display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 9999;
+        align-items: center; justify-content: center;
+    }
+    .modal-content-animated {
+        background: var(--surface-dark); border: 1px solid var(--glass-border);
+        border-radius: 16px; padding: 20px; width: 90%; max-width: 450px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        animation: slideUpFade 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+</style>
 
 <div id="toast-container"></div>
 
-<div id="detailsModal" class="modal-backdrop" style="display: none;">
-    <div class="modal-content" style="display: block; opacity: 1; max-width: 420px; padding: 1.5rem;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-            <h3 style="margin: 0; font-size: 1.4rem; color: var(--text-main);" id="detail-name"></h3>
-            <button type="button" onclick="closeDetailsModal()" style="background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; line-height: 1;">&times;</button>
+<section class="create-medicine-card">
+    <h2><i class="ph ph-flask"></i> <%= t.adminMedicines.addNew %></h2>
+    <form class="grid-form-compact" id="createMedicineForm">
+        
+        <div class="floating-field">
+            <input type="text" name="name" placeholder=" " required>
+            <label><%= t.userRequest.medName %></label>
         </div>
         
-        <img id="detail-image" src="" alt="Medicine" style="width: 100%; height: 220px; object-fit: cover; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--glass-border);">
+        <div class="floating-field">
+            <input type="text" name="companyName" placeholder=" " required>
+            <label><%= t.adminMedicines.company %></label>
+        </div>
         
-        <div style="background: var(--surface-light); padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px;">
-                <span class="text-muted"><%= t.adminMedicines.company || 'Company' %></span>
-                <strong id="detail-company" style="color: var(--text-main);"></strong>
-            </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px;">
-                <span class="text-muted"><%= t.common.price || 'Price' %></span>
-                <strong style="color: var(--text-main);">$<span id="detail-price"></span></strong>
-            </div>
-            <div style="display: flex; justify-content: space-between;">
-                <span class="text-muted"><%= t.common.stock || 'Stock' %></span>
-                <span id="detail-stock-container"></span>
-            </div>
+        <div class="floating-field">
+            <input type="number" name="price" step="0.01" placeholder=" " required>
+            <label><%= t.common.price %> (؋)</label>
+        </div>
+        
+        <div class="floating-field">
+            <input type="number" name="stockQuantity" placeholder=" " required>
+            <label><%= t.adminMedicines.availableStock %></label>
+        </div>
+        
+        <div class="file-upload-box">
+            <i class="ph ph-image" style="color: var(--primary); font-size: 1.2rem; margin-right: 6px;"></i>
+            <span id="file-chosen-text"><%= t.adminMedicines.uploadImage %></span>
+            <input type="file" name="imageURL" accept="image/*" onchange="document.getElementById('file-chosen-text').innerText = this.files[0].name"> 
         </div>
 
-        <div style="display: flex; gap: 10px;">
-            <button type="button" class="btn-icon" style="flex: 1; border-radius: 8px; color: var(--primary); border-color: var(--primary); gap: 6px; font-weight: bold;" onclick="triggerEditFromDetails()">
-                <i class="ph ph-pencil-simple" style="font-size: 1.2rem;"></i> <%= t.common.edit || 'Edit' %>
-            </button>
-            <button type="button" class="btn-icon" style="flex: 1; border-radius: 8px; color: var(--danger); border-color: var(--danger); gap: 6px; font-weight: bold;" onclick="triggerDeleteFromDetails()">
-                <i class="ph ph-trash" style="font-size: 1.2rem;"></i> <%= t.common.delete || 'Delete' %>
-            </button>
+        <div class="floating-field field-full-width">
+            <textarea name="description" rows="1" placeholder=" " style="resize: none; padding-top: 18px;"></textarea>
+            <label><%= t.userRequest.description %></label>
         </div>
-    </div>
+        
+        <div class="progress-bar-wrapper" id="uploadProgressContainer">
+            <div class="progress-bar-fill" id="uploadProgressBar"></div>
+        </div>
+        
+        <button type="submit" class="btn-submit-med" id="submitBtn">
+            <i class="ph ph-plus-circle"></i> <%= t.adminMedicines.addNew %>
+        </button>
+    </form>
+</section>
+
+<div class="medicine-dense-grid" id="medicineGrid">
+    <% medicines.forEach(med => { %>
+        <div class="med-card" id="row-<%= med._id %>">
+            
+            <div class="med-img-box">
+                <% if(med.imageURL) { %>
+                    <img src="<%= med.imageURL %>" alt="<%= med.name %>" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <span class="med-img-fallback" style="display:none;"><%= med.name.charAt(0).toUpperCase() %></span>
+                <% } else { %>
+                    <span class="med-img-fallback"><%= med.name.charAt(0).toUpperCase() %></span>
+                <% } %>
+            </div>
+
+            <div class="med-content-box">
+                <h4 class="med-title" title="<%= med.name %>"><%= med.name %></h4>
+                <p class="med-company" title="<%= med.companyName %>"><%= med.companyName %></p>
+                
+                <div class="med-meta-row">
+                    <span class="med-price">؋<%= med.price.toLocaleString() %></span>
+                    <span class="med-stock-tag <%= med.stock == 0 ? 'out' : '' %>">
+                        <%= med.stock > 0 ? med.stock + ' ' + (t.adminMedicines.inStock || 'In Stock') : (t.userDashboard.outOfStock || 'Out') %>
+                    </span>
+                </div>
+
+                <div class="med-card-footer">
+                    <button class="med-mini-btn chevron" onclick="toggleCardDesc(this)" title="Toggle Description">
+                        <i class="ph ph-caret-down"></i>
+                    </button>
+                    <div class="med-action-btn-group">
+                        <button class="med-mini-btn" onclick="openEditModal('<%= encodeURIComponent(JSON.stringify(med)) %>')" title="Edit product">
+                            <i class="ph ph-pencil-simple"></i>
+                        </button>
+                        <button class="med-mini-btn danger" onclick="openDeleteModal('<%= med._id %>')" title="Delete product">
+                            <i class="ph ph-trash" style="stroke-width: 30px;"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="med-collapsible-desc">
+                <div style="padding: 8px 10px;"><%= med.description || 'No description assigned.' %></div>
+            </div>
+
+        </div>
+    <% }) %>
 </div>
 
-<div id="editModal" class="modal-backdrop" style="display: none;">
-    <div class="modal-content" style="display: block; opacity: 1; max-width: 500px; padding: 2rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-            <h3 style="margin: 0;"><%= t.common.edit || 'Edit Medicine' %></h3>
-            <button type="button" onclick="closeEditModal()" style="background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
-        </div>
-        <form id="editMedicineForm">
-            <input type="hidden" id="editId" name="id">
-            <div class="form-group">
-                <label><%= t.userRequest.medName || 'Medicine Name' %></label>
-                <input type="text" id="editName" name="name" required>
+<div class="custom-backdrop" id="editModal">
+    <div class="modal-content-animated">
+        <h3 style="margin-top:0; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;"><i class="ph ph-pencil-simple" style="color:var(--primary);"></i> Edit Product</h3>
+        
+        <form id="editMedicineForm" class="grid-form-compact" style="grid-template-columns: 1fr; margin-top: 14px;">
+            <input type="hidden" name="id" id="editId">
+            
+            <div class="floating-field">
+                <input type="text" name="name" id="editName" placeholder=" " required>
+                <label>Medicine Name</label>
             </div>
-            <div class="form-group">
-                <label><%= t.adminMedicines.company || 'Company' %></label>
-                <input type="text" id="editCompany" name="companyName" required>
+            
+            <div class="floating-field">
+                <input type="text" name="companyName" id="editCompany" placeholder=" " required>
+                <label>Company</label>
             </div>
-            <div class="form-group">
-                <label><%= t.common.price || 'Price' %> (؋)</label>
-                <input type="number" id="editPrice" name="price" step="0.01" required>
+            
+            <div class="floating-field">
+                <input type="number" name="price" step="0.01" id="editPrice" placeholder=" " required>
+                <label>Price (؋)</label>
             </div>
-            <div class="form-group">
-                <label><%= t.adminMedicines.availableStock || 'Available Stock' %></label>
-                <input type="number" id="editStock" name="stockQuantity" required>
+            
+            <div class="floating-field">
+                <input type="number" name="stockQuantity" id="editStock" placeholder=" " required>
+                <label>Stock Quantity</label>
             </div>
-            <div class="form-group">
-                <label><%= t.adminMedicines.uploadImage || 'Upload New Image (Optional)' %></label>
-                <input type="file" name="imageURL" accept="image/*">
+
+            <div class="floating-field">
+                <textarea name="description" id="editDesc" rows="2" placeholder=" " style="resize: none; padding-top: 18px;"></textarea>
+                <label>Description</label>
             </div>
+            
             <div class="modal-actions">
-                <button type="submit" class="btn-primary" style="width: 100%;"><%= t.common.save || 'Save Changes' %></button>
+                <button type="button" class="btn-outline" onclick="closeEditModal()">Cancel</button>
+                <button type="submit" class="btn-create" style="width: auto; margin:0; padding: 8px 20px;" id="editSubmitBtn">Save Updates</button>
             </div>
         </form>
     </div>
 </div>
 
-<div id="deleteModal" class="modal-backdrop" style="display: none;">
-    <div class="modal-content confirmation-box" style="display: block; opacity: 1;">
-        <div class="icon-box danger large" style="margin: 0 auto 15px;">
-            <i class="ph ph-trash"></i>
-        </div>
-        <h3 style="text-align: center;"><%= t.common.delete %>?</h3>
-        <p style="text-align: center; color: var(--text-muted);"><%= t.adminMedicines.deleteConfirmMessage || "Are you sure you want to delete this medicine?" %></p>
-        <div class="modal-actions" style="display: flex; gap: 10px; margin-top: 20px;">
-            <button class="btn-cancel" onclick="closeDeleteModal()" style="flex: 1;"><%= t.common.cancel %></button>
-            <button class="btn-delete" id="confirmDeleteBtn" style="flex: 1;"><%= t.common.delete %></button>
+<div class="custom-backdrop" id="deleteModal">
+    <div class="modal-content-animated" style="border-color: rgba(239, 68, 68, 0.3);">
+        <h3 style="margin-top:0; font-size: 1.1rem; color: var(--danger); display: flex; align-items: center; gap: 8px;"><i class="ph ph-warning"></i> Remove Item</h3>
+        <p style="font-size: 0.9rem; color: var(--text-main); margin-bottom: 20px;">Are you certain you want to delete this medicine product?</p>
+        
+        <div class="modal-actions">
+            <button type="button" class="btn-outline" onclick="closeDeleteModal()">Cancel</button>
+            <button type="button" class="btn-danger" id="confirmDeleteBtn">Delete product</button>
         </div>
     </div>
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const deleteModal = document.getElementById('deleteModal');
-        const editModal = document.getElementById('editModal');
-        const detailsModal = document.getElementById('detailsModal');
-        const toastContainer = document.getElementById('toast-container');
-    
-        if(deleteModal) document.body.appendChild(deleteModal);
-        if(editModal) document.body.appendChild(editModal);
-        if(detailsModal) document.body.appendChild(detailsModal);
-        if(toastContainer) document.body.appendChild(toastContainer);
-    });
+    // ----- DESCRIPTIONS COLLAPSIBLE TOGGLE -----
+    function toggleCardDesc(btn) {
+        const card = btn.closest('.med-card');
+        const content = card.querySelector('.med-collapsible-desc');
+        btn.classList.toggle('open');
+        content.classList.toggle('show');
+    }
 
+    // ----- TOAST ALERTS HELPER -----
     function showToast(message, type = 'success') {
         const container = document.getElementById('toast-container');
+        if (!container) return alert(message);
+        
         const toast = document.createElement('div');
         const icon = type === 'success' ? '<i class="ph ph-check-circle"></i>' : '<i class="ph ph-warning-circle"></i>';
-        toast.className = `toast ${type}`; 
+        toast.className = `toast ${type}`;
         toast.innerHTML = `${icon} <span>${message}</span>`;
         container.appendChild(toast);
-
+        
         setTimeout(() => {
             toast.style.opacity = '0';
             toast.style.transform = 'translateY(-20px)';
@@ -183,177 +408,157 @@
         }, 3000);
     }
 
-    // --- CREATE MEDICINE ---
-    const createForm = document.getElementById('createMedicineForm');
-    createForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const btn = createForm.querySelector('.addBtn');
-        const originalText = btn.innerText;
-        const progressBar = document.getElementById('progressBar');
-        const progressContainer = document.getElementById('uploadProgressContainer');
-        const progressText = document.getElementById('progressText');
-
-        const formData = new FormData(createForm);
-        const isPublished = createForm.querySelector('input[name="isPublished"]').checked;
-        formData.set('isPublished', isPublished); 
-
-        btn.disabled = true;
-        btn.innerText = 'Uploading...';
-        if(progressContainer) progressContainer.style.display = 'block';
-
-        try {
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += Math.random() * 10;
-                if(progress > 90) progress = 90;
-                if(progressBar) progressBar.style.width = `${progress}%`;
-                if(progressText) progressText.innerText = `${Math.round(progress)}%`;
-            }, 200);
-
-            const res = await fetch('/admin/medicines', {
-                method: 'POST',
-                body: formData
-            });
-
-            clearInterval(interval);
-            if(progressBar) progressBar.style.width = '100%';
-            if(progressText) progressText.innerText = '100%';
-
-            const data = await res.json();
-            if (res.ok) {
-                showToast('Medicine added successfully!', 'success');
-                createForm.reset();
-                setTimeout(() => location.reload(), 1000); 
-            } else {
-                showToast(data.message || 'Error creating medicine', 'error');
-            }
-        } catch (err) {
-            showToast('Network error occurred', 'error');
-        } finally {
-            btn.disabled = false;
-            btn.innerText = originalText;
-            setTimeout(() => {
-                if(progressContainer) progressContainer.style.display = 'none';
-            }, 2000);
-        }
-    });
-
-    // --- DETAILS MODAL LOGIC (FIXED) ---
-    let currentDetailData = null;
-
-    function openDetailsModal(btn) {
-        currentDetailData = btn.dataset;
-        
-        document.getElementById('detail-name').innerText = currentDetailData.name;
-        document.getElementById('detail-company').innerText = currentDetailData.company;
-        document.getElementById('detail-price').innerText = parseFloat(currentDetailData.price || 0).toFixed(2);
-        document.getElementById('detail-image').src = currentDetailData.image;
-        
-        const stock = parseInt(currentDetailData.stock || 0);
-        const stockContainer = document.getElementById('detail-stock-container');
-        if(stock >= 1) {
-            stockContainer.innerHTML = `<span class="text-success" style="background: rgba(16, 185, 129, 0.1); padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;">${stock} <%= t.adminMedicines.inStock || 'In Stock' %></span>`;
-        } else {
-            stockContainer.innerHTML = `<span class="text-danger" style="background: rgba(239, 68, 68, 0.1); padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;"><%= t.adminMedicines.outOfStock || 'Out of Stock' %></span>`;
-        }
-
-        // Direct style manipulation bypasses CSS conflicts
-        document.getElementById('detailsModal').style.display = 'block';
-    }
-
-    function closeDetailsModal() {
-        document.getElementById('detailsModal').style.display = 'none';
-        currentDetailData = null;
-    }
-
-    // --- TRIGGER EDIT / DELETE FROM DETAILS ---
+    // ----- INITIALIZE DELETIONS & EDITS NATIVE LOGIC -----
     let deleteId = null;
-
-    function triggerEditFromDetails() {
-        if(!currentDetailData) return;
-        
-        document.getElementById('editId').value = currentDetailData.id;
-        document.getElementById('editName').value = currentDetailData.name;
-        document.getElementById('editCompany').value = currentDetailData.company;
-        document.getElementById('editPrice').value = currentDetailData.price;
-        document.getElementById('editStock').value = currentDetailData.stock;
-        
-        closeDetailsModal();
-        document.getElementById('editModal').style.display = 'block';
+    
+    function openDeleteModal(id) {
+        deleteId = id;
+        document.getElementById('deleteModal').style.display = 'flex';
+    }
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+        deleteId = null;
     }
 
-    function triggerDeleteFromDetails() {
-        if(!currentDetailData) return;
+    function openEditModal(encodedJson) {
+        const med = JSON.parse(decodeURIComponent(encodedJson));
+        document.getElementById('editId').value = med._id;
+        document.getElementById('editName').value = med.name;
+        document.getElementById('editCompany').value = med.companyName;
+        document.getElementById('editPrice').value = med.price;
+        document.getElementById('editStock').value = med.stock;
+        document.getElementById('editDesc').value = med.description || '';
         
-        deleteId = currentDetailData.id;
-        closeDetailsModal();
-        document.getElementById('deleteModal').style.display = 'block';
-    }
+        // Manual trigger floating label activation styles on values load
+        document.querySelectorAll('#editMedicineForm .floating-field input, #editMedicineForm .floating-field textarea').forEach(el => {
+            el.placeholder = " ";
+        });
 
-    // --- MODAL CLOSE HELPERS ---
+        document.getElementById('editModal').style.display = 'flex';
+    }
     function closeEditModal() {
         document.getElementById('editModal').style.display = 'none';
-        document.getElementById('editMedicineForm').reset();
     }
 
-    function closeDeleteModal() {
-        deleteId = null;
-        document.getElementById('deleteModal').style.display = 'none';
+    // Close modals on generic overlay shadow click
+    window.onclick = function(e) {
+        if (e.target === document.getElementById('editModal')) closeEditModal();
+        if (e.target === document.getElementById('deleteModal')) closeDeleteModal();
     }
 
-    // --- EDIT SUBMISSION ---
-    const editForm = document.getElementById('editMedicineForm');
-    editForm.addEventListener('submit', async (e) => {
+    // --- ASYNC FORM CREATION WITH NATIVE XHR TRACKING ---
+    document.getElementById('createMedicineForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        const submitBtn = editForm.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerText;
+        
+        const form = this;
+        const formData = new FormData(form);
+        const submitBtn = document.getElementById('submitBtn');
+        const progressContainer = document.getElementById('uploadProgressContainer');
+        const progressBar = document.getElementById('uploadProgressBar');
         
         submitBtn.disabled = true;
-        submitBtn.innerText = 'Saving...';
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="ph ph-spinner ph-spin"></i> processing...';
+        
+        progressContainer.style.display = 'block';
+        progressBar.style.width = '0%';
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/admin/medicines', true);
+
+        xhr.upload.addEventListener('progress', function(e) {
+            if (e.lengthComputable) {
+                const percentComplete = (e.loaded / e.total) * 100;
+                progressBar.style.width = percentComplete + '%';
+            }
+        });
+
+        xhr.addEventListener('load', function() {
+            if (xhr.status === 200 || xhr.status === 201) {
+                showToast('Medicine created successfully!', 'success');
+                setTimeout(() => location.reload(), 800);
+            } else {
+                let errorMsg = 'Error saving product details';
+                try {
+                    const resData = JSON.parse(xhr.responseText);
+                    errorMsg = resData.message || errorMsg;
+                } catch(err){}
+                showToast(errorMsg, 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                progressContainer.style.display = 'none';
+            }
+        });
+
+        xhr.addEventListener('error', function() {
+            showToast('Network file upload execution failed', 'error');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+            progressContainer.style.display = 'none';
+        });
+
+        xhr.send(formData);
+    });
+
+    // --- ASYNC PUT SUBMISSION MODAL FORM ---
+    document.getElementById('editMedicineForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const submitBtn = document.getElementById('editSubmitBtn');
+        submitBtn.disabled = true;
+        const originalText = submitBtn.innerText;
+        submitBtn.innerText = '...';
 
         const id = document.getElementById('editId').value;
-        const formData = new FormData(editForm);
+        const payload = {
+            name: document.getElementById('editName').value,
+            companyName: document.getElementById('editCompany').value,
+            price: document.getElementById('editPrice').value,
+            stockQuantity: document.getElementById('editStock').value,
+            description: document.getElementById('editDesc').value
+        };
 
         try {
             const res = await fetch(`/admin/medicines/${id}`, {
                 method: 'PUT',
-                body: formData
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
             });
 
             if (res.ok) {
                 showToast('Medicine updated successfully!', 'success');
-                setTimeout(() => location.reload(), 1000);
+                setTimeout(() => location.reload(), 800);
             } else {
                 const data = await res.json();
-                showToast(data.message || 'Error updating medicine', 'error');
+                showToast(data.message || 'Error updating item attributes', 'error');
                 submitBtn.disabled = false;
                 submitBtn.innerText = originalText;
             }
         } catch (err) {
-            showToast('Network error occurred', 'error');
+            showToast('Network pipeline error occurred', 'error');
             submitBtn.disabled = false;
             submitBtn.innerText = originalText;
         }
     });
 
-    // --- DELETE SUBMISSION ---
+    // --- DELETE ROUTE HANDLER EXECUTIONS ---
     document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
         if (!deleteId) return;
-        
+        this.disabled = true;
         this.innerText = '...';
+        
         try {
             const res = await fetch(`/admin/medicines/${deleteId}`, { method: 'DELETE' });
             if (res.ok) {
-                const row = document.getElementById(`row-${deleteId}`);
-                if (row) row.remove();
-                showToast('Medicine deleted successfully', 'success');
+                const targetCard = document.getElementById(`row-${deleteId}`);
+                if (targetCard) targetCard.remove();
+                showToast('Medicine target entity deleted', 'success');
             } else {
-                showToast('Failed to delete', 'error');
+                showToast('Failed to fulfill product deletion', 'error');
             }
         } catch (err) {
-            showToast('Network Error', 'error');
+            showToast('Network verification error', 'error');
         } finally {
+            this.disabled = false;
             this.innerText = '<%= t.common.delete || "Delete" %>';
             closeDeleteModal();
         }

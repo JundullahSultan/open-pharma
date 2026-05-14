@@ -5,10 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <script>
-        // Read theme from memory before the page renders
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-    </script>
+    const htmlEl = document.documentElement;
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+
+    // Helper functions
+    function applyLight() {
+        htmlEl.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+        const themeIcon = document.getElementById('themeIcon');
+        if (themeIcon) {
+            themeIcon.classList.replace('ph-moon', 'ph-sun');
+            themeIcon.style.color = "#f59e0b"; // Orange Sun
+        }
+    }
+
+    function applyDark() {
+        htmlEl.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'dark');
+        const themeIcon = document.getElementById('themeIcon');
+        if (themeIcon) {
+            themeIcon.classList.replace('ph-sun', 'ph-moon');
+            themeIcon.style.color = "var(--text-main)";
+        }
+    }
+
+    // Apply theme immediately on load
+    if (savedTheme === 'light') {
+        applyLight();
+    } else {
+        applyDark();
+    }
+
+    // Wait for the rest of the page to load before attaching the button listener
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggleBtn = document.getElementById('themeToggle');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => {
+                const currentTheme = htmlEl.getAttribute('data-theme');
+                if (currentTheme === 'light') {
+                    applyDark();
+                } else {
+                    applyLight();
+                }
+            });
+        }
+    });
+</script>
 
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#3b82f6">

@@ -1,61 +1,131 @@
+<style>
+  /* Global Page Loader Overlay */
+  #global-page-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: var(--bg-dark);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+  }
+  
+  #global-page-loader.show {
+    opacity: 0.85; 
+    visibility: visible;
+    pointer-events: all;
+  }
+
+  /* Custom Orbital Loader */
+  .loader {
+    width: 80px; /* Scaled up slightly for full-screen visibility */
+    height: 35px;
+    border: 3px solid var(--primary); /* Uses your theme's primary color */
+    box-sizing: border-box;
+    border-radius: 50%;
+    display: grid;
+    animation: l2 2s infinite linear;
+  }
+  .loader:before,
+  .loader:after {
+    content: "";
+    grid-area: 1/1;
+    border: inherit;
+    border-radius: 50%;
+    animation: inherit;
+    animation-duration: 3s;
+  }
+  .loader:after {
+    --s:-1;
+  }
+  @keyframes l2 {
+     100% {transform:rotate(calc(var(--s,1)*1turn))}
+  }
+</style>
+
+<div id="global-page-loader">
+  <div class="loader"></div>
+</div>
+
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. Get Elements Safely
+    // 1. Theme Elements & Logic
     const toggleBtn = document.getElementById('themeToggle');
     const themeIcon = document.getElementById('themeIcon');
     const htmlEl = document.documentElement;
 
-    // 2. Load Saved Theme on Startup
     const savedTheme = localStorage.getItem('theme') || 'dark';
-    
     if (savedTheme === 'light') {
         applyLight();
     } else {
         applyDark();
     }
 
-    // 3. Toggle Logic (Only run if the button exists)
-    if (toggleBtn && themeIcon) {
-        toggleBtn.addEventListener('click', () => {
-            const currentTheme = htmlEl.getAttribute('data-theme');
-            if (currentTheme === 'light') {
-                applyDark();
-            } else {
-                applyLight();
-            }
-        });
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', () => {
+          const currentTheme = htmlEl.getAttribute('data-theme');
+          if (currentTheme === 'light') applyDark();
+          else applyLight();
+      });
     }
 
-    // --- Helper Functions ---
     function applyLight() {
         htmlEl.setAttribute('data-theme', 'light');
         localStorage.setItem('theme', 'light');
-        if (themeIcon) {
-            themeIcon.classList.replace('ph-moon', 'ph-sun');
-            themeIcon.style.color = "#f59e0b"; // Orange Sun
+        if(themeIcon) {
+          themeIcon.classList.replace('ph-moon', 'ph-sun');
+          themeIcon.style.color = "#f59e0b"; 
         }
     }
 
     function applyDark() {
         htmlEl.removeAttribute('data-theme');
         localStorage.setItem('theme', 'dark');
-        if (themeIcon) {
-            themeIcon.classList.replace('ph-sun', 'ph-moon');
-            themeIcon.style.color = "var(--text-main)";
+        if(themeIcon) {
+          themeIcon.classList.replace('ph-sun', 'ph-moon');
+          themeIcon.style.color = "var(--text-main)";
         }
     }
-});
 </script>
 
 <script>
+  // 2. Global Loader Logic
+  document.addEventListener('DOMContentLoaded', () => {
+    const loader = document.getElementById('global-page-loader');
+
+    window.showGlobalLoader = () => loader.classList.add('show');
+    window.hideGlobalLoader = () => loader.classList.remove('show');
+
+    // Show on actual page unload/navigation
+    window.addEventListener('beforeunload', showGlobalLoader);
+
+    // Hide when page is loaded or restored from back-button (bfcache)
+    window.addEventListener('pageshow', hideGlobalLoader);
+
+    // Instantly show on standard link clicks
+    document.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', function() {
+        const href = this.getAttribute('href');
+        const target = this.getAttribute('target');
+        // Exclude empty links, hashes, javascript, or new tabs
+        if (href && !href.startsWith('#') && !href.startsWith('javascript') && target !== '_blank') {
+          showGlobalLoader();
+        }
+      });
+    });
+  });
+
+  // 3. Service Worker
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js')
-        .then(registration => {
-          console.log('ServiceWorker registration successful with scope: ', registration.scope);
-        }, err => {
-          console.log('ServiceWorker registration failed: ', err);
-        });
+        .then(registration => console.log('ServiceWorker registered'))
+        .catch(err => console.log('ServiceWorker failed: ', err));
     });
   }
 </script>
