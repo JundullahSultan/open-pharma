@@ -1,53 +1,424 @@
 <%- include('../partials/user-header', { title: t.userDashboard.title, page: 'dashboard' }) %>
 
+<style>
+  /* ==============================
+     MEDICINE LIST – COMPACT & POLISHED
+     Uses global theme variables (--surface-dark, --glass-border, etc.)
+     Mobile‑first, fully responsive
+     ============================== */
+
+  /* Grid: single column on phones, multi‑column on wider screens */
+  .medicine-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-top: 1.25rem;
+    padding: 0 0.25rem;
+  }
+  @media (min-width: 600px) {
+    .medicine-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 960px) {
+    .medicine-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  /* Card – matches global .card but slightly tighter */
+  .product-card {
+    background: var(--surface-dark);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: box-shadow var(--transition-fast), border-color var(--transition-fast), transform 0.1s ease;
+    will-change: transform;
+  }
+  .product-card:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-md);
+  }
+  .product-card:active {
+    transform: scale(0.995);
+  }
+
+  /* Compact row – always visible */
+  .product-compact {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 1rem 1.1rem;
+    cursor: pointer;
+    user-select: none;
+    transition: background var(--transition-fast);
+  }
+  .product-compact:hover {
+    background: var(--surface-light);
+  }
+
+  /* Thumbnail */
+  .product-img-small {
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
+    background: var(--surface-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-sm);
+  }
+  .product-img-small img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .product-img-small .img-fallback {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+  }
+
+  /* Text summary */
+  .product-summary {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  .product-summary h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.01em;
+  }
+  .company {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .product-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 0.85rem;
+    color: var(--text-main);
+    margin-top: 0.15rem;
+  }
+  .price {
+    font-weight: 600;
+    color: var(--text-main);
+  }
+  .stock {
+    color: var(--text-main);
+    background: var(--surface-light);
+    padding: 0.2rem 0.65rem;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 500;
+  }
+  .stock.out {
+    color: var(--danger);
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+  }
+
+  /* Toggle button – eye / caret */
+  .toggle-details {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.25rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background var(--transition-fast), color var(--transition-fast), transform 0.2s ease;
+    flex-shrink: 0;
+  }
+  .toggle-details:hover {
+    background: var(--surface-light);
+    color: var(--text-main);
+  }
+  .toggle-details.open {
+    color: var(--primary);
+    background: var(--surface-light);
+  }
+  .toggle-details.open i {
+    transform: rotate(180deg);
+  }
+
+  /* Expandable details – smooth height animation */
+  .product-details {
+    max-height: 0;
+    overflow: hidden;
+    border-top: none;
+    background: var(--bg-dark);
+    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                border-top 0.35s ease;
+  }
+  .product-details.show {
+    max-height: 300px;
+    border-top: 1px solid var(--glass-border);
+  }
+  .details-inner {
+    padding: 1rem 1.1rem;
+  }
+
+  /* Description text */
+  .details-description {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 0.9rem;
+    line-height: 1.5;
+  }
+
+  /* Order form */
+  .order-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  .qty-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .qty-control label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+  .qty-control input[type="number"] {
+    width: 70px;
+    padding: 0.55rem 0.6rem;
+    border: 1px solid var(--glass-border);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background: var(--surface-dark);
+    color: var(--text-main);
+    outline: none;
+    -moz-appearance: textfield;
+  }
+  .qty-control input[type="number"]:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  }
+  .qty-control input[type="number"]::-webkit-outer-spin-button,
+  .qty-control input[type="number"]::-webkit-inner-spin-button {
+    opacity: 1;
+  }
+
+  /* Order button – reuse global .order-btn but we can add specific spacing */
+  .order-form .order-btn {
+    align-self: flex-start;
+    margin-top: 0.25rem;
+  }
+
+  /* Toast notification – uses global shadow */
+  .cart-toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--text-main);
+    color: var(--bg-dark);
+    padding: 0.8rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    z-index: 11000;
+    transition: transform 0.3s ease;
+    box-shadow: var(--shadow-md);
+  }
+  .cart-toast.visible {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Mobile refinements */
+  @media (max-width: 400px) {
+    .product-compact {
+      padding: 0.8rem 0.85rem;
+    }
+    .product-img-small {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+    }
+    .product-summary h4 {
+      font-size: 0.95rem;
+    }
+    .toggle-details {
+      width: 32px;
+      height: 32px;
+    }
+  }
+</style>
+
+<!-- Toast container -->
+<div class="cart-toast" id="cartToast"></div>
+
 <div class="medicine-grid">
-    <% medicines.forEach(med => { %>
-        <div class="card product-card">
-            <div class="product-img">
-                <img src="<%= med.imageURL %>" alt="<%= med.name %>">
-            </div>
-            
-            <div class="product-info">
-                <h3><%= med.name %></h3>
-                <p class="company"><%= med.companyName %></p>
-               
-                <div class="price-row">
-                    <span class="price">؋ <%= med.price %></span>
-                    <span class="stock"><%= med.stock %> <%= t.adminMedicines.inStock %></span>
-                </div>
-
-                <form class="order-form"> 
-                    <input type="hidden" name="price" value="<%= med.price %>">
-                    <input type="hidden" name="medicineId" value="<%= med._id %>">
-                    
-                    <div class="order-placement">
-                        <div class="qty-control">
-                            <label><%= t.userDashboard.quantityLabel %></label>
-                            <input type="number" name="quantity" min="1" max="<%= med.stock %>" value="1" required>
-                        </div>
-
-                        <button type="submit" class="order-btn btn-sm">
-                            <%= t.userDashboard.placeOrder %>
-                        </button>
-                    </div>
-                </form>
-            </div>
+  <% medicines.forEach(med => { %>
+    <div class="product-card">
+      <!-- Compact row -->
+      <div class="product-compact" role="button" tabindex="0" aria-expanded="false"
+           onclick="toggleDetails(this)" onkeydown="if(event.key==='Enter') toggleDetails(this)">
+        <div class="product-img-small">
+          <% if (med.imageURL) { %>
+            <img src="<%= med.imageURL %>" alt="<%= med.name %>" loading="lazy"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="img-fallback" style="display:none;"><%= med.name.charAt(0).toUpperCase() %></span>
+          <% } else { %>
+            <span class="img-fallback"><%= med.name.charAt(0).toUpperCase() %></span>
+          <% } %>
         </div>
-    <% }) %>
+        <div class="product-summary">
+          <h4><%= med.name %></h4>
+          <p class="company"><%= med.companyName %></p>
+          <div class="product-meta">
+            <span class="price">؋ <%= med.price.toLocaleString() %></span>
+            <span class="stock <%= med.stock == 0 ? 'out' : '' %>">
+              <%= med.stock > 0 ? med.stock + ' ' + t.adminMedicines.inStock : t.userDashboard.outOfStock %>
+            </span>
+          </div>
+        </div>
+        <button class="toggle-details" aria-label="Show details" onclick="event.stopPropagation(); toggleDetails(this.parentNode)">
+          <i class="ph ph-caret-down"></i>
+        </button>
+      </div>
+
+      <!-- Expandable details -->
+      <div class="product-details">
+        <div class="details-inner">
+          <div class="details-description">
+            <%= med.description || t.userDashboard.noDescription %>
+          </div>
+          <form class="order-form" onsubmit="handleOrder(event, '<%= med._id %>', '<%= med.name %>', '<%= med.price %>', <%= med.stock %>)">
+            <input type="hidden" name="medicineId" value="<%= med._id %>">
+            <div class="qty-control">
+              <label><%= t.userDashboard.quantityLabel %></label>
+              <input type="number" name="quantity" min="1" max="<%= med.stock %>" value="1" required
+                     <%= med.stock == 0 ? 'disabled' : '' %>>
+            </div>
+            <button type="submit" class="order-btn" <%= med.stock == 0 ? 'disabled' : '' %>>
+              <i class="ph ph-shopping-cart"></i> 
+              <%= med.stock == 0 ? t.userDashboard.outOfStockBtn : t.userDashboard.placeOrder %>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  <% }) %>
 </div>
 
 <%- include('../partials/mobile-nav', { page: 'dashboard' }) %>
 
 <script>
-    // Highlight active mobile nav link
-    const currentPath = window.location.pathname;
-    document.querySelectorAll('.mobile-bottom-nav a').forEach(link => {
-        if (link.getAttribute('href') === currentPath) {
-            link.classList.add('active');
+  // Active mobile nav
+  const currentPath = window.location.pathname;
+  document.querySelectorAll('.mobile-bottom-nav a').forEach(link => {
+    if (link.getAttribute('href') === currentPath) link.classList.add('active');
+  });
+
+  // Toggle details with animation and icon rotation
+  function toggleDetails(row) {
+    const card = row.closest('.product-card');
+    const details = card.querySelector('.product-details');
+    const button = card.querySelector('.toggle-details');
+    const isOpen = details.classList.contains('show');
+
+    if (isOpen) {
+      details.classList.remove('show');
+      button.classList.remove('open');
+      button.setAttribute('aria-label', 'Show details');
+      row.setAttribute('aria-expanded', 'false');
+    } else {
+      document.querySelectorAll('.product-details.show').forEach(d => {
+        if (d !== details) {
+          d.classList.remove('show');
+          d.closest('.product-card').querySelector('.toggle-details').classList.remove('open');
+          d.closest('.product-card').querySelector('.product-compact').setAttribute('aria-expanded', 'false');
         }
-    });
+      });
+      details.classList.add('show');
+      button.classList.add('open');
+      button.setAttribute('aria-label', 'Hide details');
+      row.setAttribute('aria-expanded', 'true');
+    }
+  }
+
+  // Toast helper
+  function showToast(message) {
+    const toast = document.getElementById('cartToast');
+    toast.textContent = message;
+    toast.classList.add('visible');
+    clearTimeout(toast._timeout);
+    toast._timeout = setTimeout(() => toast.classList.remove('visible'), 2500);
+  }
+
+  // Order submission
+  async function handleOrder(event, medicineId, medicineName, price, stock) {
+    event.preventDefault();
+    const form = event.target;
+    const quantityInput = form.querySelector('[name="quantity"]');
+    const quantity = parseInt(quantityInput.value, 10);
+    const button = form.querySelector('.order-btn');
+    
+    if (!quantity || quantity < 1 || quantity > stock) {
+      showToast(t.userDashboard.invalidQuantity || 'Invalid quantity');
+      return;
+    }
+
+    button.disabled = true;
+    button.innerHTML = '<i class="ph ph-spinner ph-spin"></i> ' + (t.userDashboard.placingOrder || 'Placing...');
+
+    try {
+      if (typeof placeOrder === 'function') {
+        await placeOrder(medicineId, quantity);
+      } else {
+        const res = await fetch('/user/order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ medicineId, quantity })
+        });
+        if (!res.ok) throw new Error('Order failed');
+      }
+      
+      showToast(t.userDashboard.orderSuccess || 'Order placed! ✅');
+      const stockSpan = form.closest('.product-card').querySelector('.stock');
+      const remainingStock = stock - quantity;
+      if (stockSpan && remainingStock >= 0) {
+        stockSpan.textContent = remainingStock + ' ' + (t.adminMedicines.inStock || 'in stock');
+        if (remainingStock === 0) stockSpan.classList.add('out');
+        quantityInput.max = remainingStock;
+        if (remainingStock === 0) {
+          button.disabled = true;
+          button.innerHTML = '<i class="ph ph-x-circle"></i> ' + (t.userDashboard.outOfStockBtn || 'Out of stock');
+        }
+      }
+    } catch (err) {
+      showToast(t.userDashboard.orderError || 'Could not place order');
+      console.error(err);
+    } finally {
+      button.disabled = false;
+      if (stock > 0) {
+        button.innerHTML = '<i class="ph ph-shopping-cart"></i> ' + (t.userDashboard.placeOrder || 'Place Order');
+      }
+    }
+  }
 </script>
 
-<script src="/js/distroyGoBack.js"></script>
-<script src="/js/user-medicine.js"></script>
 <%- include('../partials/footer') %>

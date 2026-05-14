@@ -7,7 +7,7 @@ const User = require("./models/Users.js");
 const seedUsers = async () => {
   try {
     // 1. Connect to the database
-    await connectDB();
+    await mongoose.connect("mongodb://localhost:27017/open-pharma");
 
     // 2. Hash the passwords before saving
     // Salt rounds of 10 is the standard for security/performance

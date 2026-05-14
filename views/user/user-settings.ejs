@@ -1,76 +1,94 @@
 <%- include('../partials/user-header', { title: t.settings.title, page: 'settings' }) %>
 
-        <section class="card" style="max-width: 600px; margin: 0 auto; margin-top: 2rem;">
-            <div class="card-header">
-                <h2><i class="ph ph-gear"></i> <%= t.settings.title %></h2>
-            </div>
+<div class="card settings-card settings-card--compact">
+  <!-- Header -->
+  <div class="settings-header">
+    <h2><i class="ph ph-gear"></i> <%= t.settings.title %></h2>
+  </div>
 
-            <div style="padding: 20px; border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; gap: 20px;">
-                <div class="avatar" style="width: 80px; height: 80px; font-size: 2rem;">
-                    <% if (user && user.imageURL) { %>
-                        <img src="<%= user.imageURL %>" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                    <% } else { %>
-                        <%= (typeof userName !== 'undefined' && userName) ? userName[0].toUpperCase() : 'U' %>
-                    <% } %>
-                </div>
-                <div>
-                    <h3 style="margin-bottom: 5px;"><%= typeof userName !== 'undefined' ? userName : t.adminRequests.user %></h3>
-                    
-                    <p style="color: var(--text-muted); font-size: 0.9rem;">
-                        <%= (user && user.pharmacy) ? user.pharmacy : t.common.pharmacy %>
-                    </p>
-                </div>
-            </div>
+  <!-- Profile row (compact) -->
+  <div class="profile-row-compact">
+    <div class="avatar avatar-md">
+      <% if (user && user.imageURL) { %>
+        <img src="<%= user.imageURL %>" alt="Profile" class="avatar-img">
+      <% } else { %>
+        <span class="avatar-letter"><%= (typeof userName !== 'undefined' && userName) ? userName[0].toUpperCase() : 'U' %></span>
+      <% } %>
+    </div>
+    <div class="profile-info-compact">
+      <h3><%= typeof userName !== 'undefined' ? userName : t.adminRequests.user %></h3>
+      <p><%= (user && user.pharmacy) ? user.pharmacy : t.common.pharmacy %></p>
+    </div>
+  </div>
 
-            <div style="padding: 20px; display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                    <h4 style="margin-bottom: 5px;"><i class="ph ph-paint-brush"></i> <%= t.settings.appearance %></h4>
-                    
-                    <p style="color: var(--text-muted); font-size: 0.9rem;"><%= t.settings.appearanceDesc %></p>
-                </div>
-                
-                <button id="themeToggle" class="btn-icon" style="width: 50px; height: 50px; border-radius: 50%; background: var(--surface-light); color: var(--text-main); font-size: 1.5rem;">
-                    <i class="ph ph-moon" id="themeIcon"></i>
-                </button>
-            </div>
+  <!-- Settings in a 2‑column grid (desktop) -->
+  <div class="settings-grid">
+    <!-- Appearance -->
+    <div class="settings-item">
+      <div class="settings-item-text">
+        <h4><i class="ph ph-paint-brush"></i> <%= t.settings.appearance %></h4>
+        <p><%= t.settings.appearanceDesc %></p>
+      </div>
+      <button id="themeToggle" class="btn-icon theme-toggle-btn-sm" aria-label="Toggle theme">
+        <i class="ph ph-moon" id="themeIcon"></i>
+      </button>
+    </div>
 
-            <div style="padding: 20px; border-top: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                    <h4 style="margin-bottom: 5px;"><i class="ph ph-globe"></i> <%= t.settings.language %></h4>
-                    
-                    <p style="color: var(--text-muted); font-size: 0.9rem;"><%= t.settings.languageDesc %></p>
-                </div>
+    <!-- Language -->
+    <div class="settings-item">
+      <div class="settings-item-text">
+        <h4><i class="ph ph-globe"></i> <%= t.settings.language %></h4>
+        <p><%= t.settings.languageDesc %></p>
+      </div>
+      <div class="lang-group">
+        <a href="/lang/en" class="lang-btn-sm <%= lang === 'en' ? 'active' : '' %>">EN</a>
+        <a href="/lang/fa" class="lang-btn-sm <%= lang === 'fa' ? 'active' : '' %>">فا</a>
+        <a href="/lang/ps" class="lang-btn-sm <%= lang === 'ps' ? 'active' : '' %>">پښ</a>
+      </div>
+    </div>
+  </div>
 
-                <div class="lang-toggle-group">
-                    <a href="/lang/en" class="<%= lang === 'en' ? 'active' : '' %>">EN</a>
-                    <a href="/lang/fa" class="<%= lang === 'fa' ? 'active' : '' %>">فا</a>
-                    <a href="/lang/ps" class="<%= lang === 'ps' ? 'active' : '' %>">پښ</a>
-                </div>
-            </div>
-
-            <div style="padding: 20px; border-top: 1px solid var(--glass-border);">
-                <a href="/user/logout" class="btn-text" style="color: var(--danger); width: 100%; text-align: center; display: block; padding: 10px;">
-                    <i class="ph ph-sign-out"></i> <%= t.settings.logout %>
-                </a>
-            </div>
-        </section>
-
-        <div class="mobile-spacer" style="height: 100px"></div>
-
-    </main>
+  <!-- Logout (full width, compact) -->
+  <div class="logout-row-compact">
+    <a href="/user/logout" class="btn-text logout-btn">
+      <i class="ph ph-sign-out"></i> <%= t.settings.logout %>
+    </a>
+  </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // Highlight active mobile nav link
-        const currentPath = window.location.pathname;
-        document.querySelectorAll('.mobile-bottom-nav a').forEach(link => {
-            if (link.getAttribute('href') === currentPath) {
-                link.classList.add('active');
-            }
-        });
-    });
-</script>
+<div class="mobile-spacer" style="height: 100px"></div>
 
 <%- include('../partials/mobile-nav', { page: 'settings' }) %>
 <%- include('../partials/footer') %>
+
+<script>
+  (function() {
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      if (themeIcon) {
+        themeIcon.className = theme === 'dark' ? 'ph ph-moon' : 'ph ph-sun';
+      }
+    }
+    
+    function getPreferredTheme() {
+      const stored = localStorage.getItem('theme');
+      if (stored) return stored;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    
+    if (themeToggle) {
+      themeToggle.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = current === 'dark' ? 'light' : 'dark';
+        setTheme(newTheme);
+      });
+    }
+    
+    const initialTheme = getPreferredTheme();
+    setTheme(initialTheme);
+  })();
+</script>

@@ -1,111 +1,263 @@
 <%- include('../partials/user-header', { title: t.userOrders.myOrders, page: 'orders' }) %>
 
-            <section class="card">
-                <table>
-                    <thead>
-                        <tr>
-                  
-                            <th>Order ID</th>
-                            <th><%= t.adminRequests.medicine %></th> 
-                            <th><%= t.common.date %></th>
-                            <th><%= t.adminRequests.qty %></th>
-                            <th><%= t.common.total %></th>
-    
-                            <th><%= t.common.status %></th>
-                            <th><%= t.common.actions %></th>
-                        </tr>
-                    </thead>
-    
-                    <tbody>
-                        <% if (orders && orders.length > 0) { %>
-                            <% orders.forEach(order => { %>
-                    
-                            <tr>
-                                <td>
-                                    <span class="text-muted">#<%= order._id.toString().slice(-6).toUpperCase() %></span>
-                     
-                                </td>
+<style>
+  /* ==============================
+     ORDERS – COMPACT & MOBILE-FIRST
+     ============================== */
 
-                                <td>
-                                    <% if (order.medicineId) { %>
-                 
-                                        <div class="med-info">
-                                            <img src="<%= order.medicineId.imageURL %>" alt="" class="med-thumb">
-                           
-                                            <span><%= order.medicineId ? order.medicineId.name : t.userOrders.itemDeleted %></span>
-                                        </div>
-                                    <% } else { %>
-                
-                                        <span class="text-danger"><%= t.userOrders.itemUnavailable %></span>
-                                    <% } %>
-                                </td>
+  /* Wrapper for responsive behaviour */
+  .responsive-table {
+    width: 100%;
+  }
 
-    
-                                <td>
-                                    <%= new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
-                         
-                                </td>
+  /* Table base – compact on all screens */
+  .orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
 
-                                <td><%= order.quantity %></td>
+  .orders-table th {
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.8rem;
+    border-bottom: 1px solid var(--glass-border);
+    background: transparent;
+    white-space: nowrap;
+  }
 
-                                <td>$<%= order.totalPrice.toFixed(2) %></td>
+  .orders-table td {
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid var(--glass-border);
+    background: var(--surface-dark);
+    color: var(--text-main);
+    font-size: 0.9rem;
+  }
 
-                         
-                                <td>
-                                    <span class="badge <%= order.status.toLowerCase() %>">
-                                        <%= order.status %>
-           
-                                    </span>
-                                </td>
+  .orders-table tbody tr:last-child td {
+    border-bottom: none;
+  }
 
-                                <td>
-           
-                                    <% if(order.status === 'Pending') { %>
-                                        <form action="/user/order/cancel" method="POST" onsubmit="return confirm('<%= t.userOrders.confirmCancel %>');">
-                        
-                                            <input type="hidden" name="orderId" value="<%= order._id %>">
-                                            <button type="submit" class="btn-icon cancel" title="<%= t.userOrders.cancelOrder %>">
-                          
-                                                <i class="ph ph-x"></i>
-                                            </button>
-                                
-                                        </form>
-                                    <% } else { %>
-                                        <span class="text-muted">-</span>
-           
-                                    <% } %>
-                                </td>
-                            </tr>
-             
-                            <% }) %>
-                        <% } else { %>
-                            <tr>
-                           
-                                <td colspan="7">
-                                    <div class="empty-state">
-                                        <i class="ph ph-shopping-cart"></i>
-               
-                                        <p><%= t.userOrders.emptyState %></p>
-                                        <a href="/user/dashboard" class="btn-text"><%= t.userOrders.goToMarket %></a>
-                            
-                                    </div>
-                                </td>
-                            </tr>
-                        <% } %>
-      
-                    </tbody>
-                </table>
-            </section>
-        </main>
-    </div>
-    <%- include('../partials/mobile-nav', { page: 'orders' }) %>
+  .orders-table tbody tr:hover {
+    background: rgba(255,255,255,0.02);
+  }
+
+  /* ID styling */
+  .text-muted {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+  }
+
+  /* Medicine thumbnail + name */
+  .med-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .med-thumb {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    object-fit: cover;
+    background: var(--surface-light);
+    flex-shrink: 0;
+  }
+
+  /* Badge – reuse global .badge */
+  .badge {
+    /* already defined globally, just re‑assert spacing */
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* Cancel button */
+  .btn-icon.cancel {
+    background: transparent;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+  }
+  .btn-icon.cancel:hover {
+    background: var(--danger);
+    color: white;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-muted);
+  }
+  .empty-state i {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 0.75rem;
+    opacity: 0.6;
+  }
+  .empty-state p {
+    margin-bottom: 1rem;
+  }
+  .btn-text {
+    /* already global */
+    margin-top: 0.5rem;
+  }
+
+  /* ========== MOBILE CARD VIEW ========== */
+  @media (max-width: 768px) {
+    /* Hide table header on mobile */
+    .orders-table thead {
+      display: none;
+    }
+
+    /* Make each row a card */
+    .orders-table tbody tr {
+      display: block;
+      margin-bottom: 1rem;
+      background: var(--surface-dark);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .orders-table tbody tr:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Each cell becomes a row with label from data attribute */
+    .orders-table td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.4rem 0;
+      border-bottom: none;
+      font-size: 0.9rem;
+    }
+
+    /* Add labels via data attributes – we'll set them in the EJS */
+    .orders-table td::before {
+      content: attr(data-label);
+      font-weight: 600;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin-right: 1rem;
+      white-space: nowrap;
+      text-transform: uppercase;
+    }
+
+    /* Full-width cells */
+    .orders-table td[data-label] {
+      width: 100%;
+    }
+
+    /* Keep actions inline */
+    .orders-table td:last-child {
+      justify-content: flex-start;
+    }
+
+    /* Remove the pseudo element for empty state */
+    .empty-state td::before {
+      display: none;
+    }
+  }
+
+  /* Extra small screens – reduce font size a tiny bit more */
+  @media (max-width: 400px) {
+    .orders-table td {
+      font-size: 0.85rem;
+    }
+  }
+</style>
+
+<section class="card">
+  <div class="responsive-table">
+    <table class="orders-table">
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th><%= t.adminRequests.medicine %></th> 
+          <th><%= t.common.date %></th>
+          <th><%= t.adminRequests.qty %></th>
+          <th><%= t.common.total %></th>
+          <th><%= t.common.status %></th>
+          <th><%= t.common.actions %></th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <% if (orders && orders.length > 0) { %>
+          <% orders.forEach(order => { %>
+            <tr>
+              <td data-label="Order ID">
+                <span class="text-muted">#<%= order._id.toString().slice(-6).toUpperCase() %></span>
+              </td>
+
+              <td data-label="<%= t.adminRequests.medicine %>">
+                <% if (order.medicineId) { %>
+                  <div class="med-info">
+                    <img src="<%= order.medicineId.imageURL %>" alt="" class="med-thumb">
+                    <span><%= order.medicineId ? order.medicineId.name : t.userOrders.itemDeleted %></span>
+                  </div>
+                <% } else { %>
+                  <span class="text-danger"><%= t.userOrders.itemUnavailable %></span>
+                <% } %>
+              </td>
+
+              <td data-label="<%= t.common.date %>">
+                <%= new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+              </td>
+
+              <td data-label="<%= t.adminRequests.qty %>"><%= order.quantity %></td>
+
+              <td data-label="<%= t.common.total %>">$<%= order.totalPrice.toFixed(2) %></td>
+
+              <td data-label="<%= t.common.status %>">
+                <span class="badge <%= order.status.toLowerCase() %>">
+                  <%= order.status %>
+                </span>
+              </td>
+
+              <td data-label="<%= t.common.actions %>">
+                <% if(order.status === 'Pending') { %>
+                  <form action="/user/order/cancel" method="POST" onsubmit="return confirm('<%= t.userOrders.confirmCancel %>');" style="display:inline;">
+                    <input type="hidden" name="orderId" value="<%= order._id %>">
+                    <button type="submit" class="btn-icon cancel" title="<%= t.userOrders.cancelOrder %>">
+                      <i class="ph ph-x"></i>
+                    </button>
+                  </form>
+                <% } else { %>
+                  <span class="text-muted">-</span>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="7">
+              <div class="empty-state">
+                <i class="ph ph-shopping-cart"></i>
+                <p><%= t.userOrders.emptyState %></p>
+                <a href="/user/dashboard" class="btn-text"><%= t.userOrders.goToMarket %></a>
+              </div>
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<%- include('../partials/mobile-nav', { page: 'orders' }) %>
+
 <script>
-    // This highlights the icon that matches the current page URL
-    const currentPath = window.location.pathname;
-    document.querySelectorAll('.mobile-bottom-nav a').forEach(link => {
-        if (link.getAttribute('href') === currentPath) {
-            link.classList.add('active');
-        }
-    });
+  const currentPath = window.location.pathname;
+  document.querySelectorAll('.mobile-bottom-nav a').forEach(link => {
+    if (link.getAttribute('href') === currentPath) {
+      link.classList.add('active');
+    }
+  });
 </script>
-<%- include('../partials/footer') %>
+<%- include('../partials/footer') %>    
