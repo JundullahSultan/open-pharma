@@ -1,69 +1,141 @@
-<%- include('partials/admin-header', {title: t.adminRequests.title, page: 'requests'}) %>
+<%- include('partials/admin-header', { title: t.adminRequests.title, page: 'requests' }) %>
 
 <style>
-    /* ===== Search Bar ===== */
     .toolbar { margin-bottom: 15px; }
-    .search-bar {
-        display: flex; align-items: center; background: var(--surface-dark);
-        border: 1px solid var(--glass-border); border-radius: 10px;
-        padding: 10px 16px; gap: 12px; max-width: 450px;
-        transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-    }
-    .search-bar:focus-within {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 4px rgba(59,130,246,0.15);
-    }
+    .search-bar { display: flex; align-items: center; background: var(--surface-dark); border: 1px solid var(--glass-border); border-radius: 10px; padding: 10px 16px; gap: 12px; max-width: 450px; transition: border-color var(--transition-fast), box-shadow var(--transition-fast); }
+    .search-bar:focus-within { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(59,130,246,0.15); }
     .search-bar i { color: var(--text-muted); font-size: 1.2rem; }
     .search-bar:focus-within i { color: var(--primary); }
-    .search-bar input {
-        border: none; background: transparent; color: var(--text-main);
-        outline: none; width: 100%; font-size: 0.95rem; font-family: inherit;
-    }
+    .search-bar input { border: none; background: transparent; color: var(--text-main); outline: none; width: 100%; font-size: 0.95rem; font-family: inherit; }
     .search-bar input::placeholder { color: var(--text-muted); }
 
-    /* ===== Requests Grid ===== */
-    .requests-grid {
-        display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;
-    }
+    .requests-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
 
     .request-card {
-        background: var(--surface-dark); border: 1px solid var(--glass-border);
-        border-radius: 12px; padding: 14px; display: flex; flex-direction: column;
-        gap: 10px; box-shadow: var(--shadow-sm);
-        transition: box-shadow var(--transition-fast), transform var(--transition-fast), border-color var(--transition-fast);
+        background: var(--surface-dark);
+        border: 1px solid var(--glass-border);
+        border-radius: 12px;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        box-shadow: var(--shadow-sm);
+        transition: box-shadow var(--transition-fast), transform var(--transition-fast), border-color var(--transition-fast), opacity var(--transition-fast);
     }
-    .request-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
-    .request-card.highlight { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
+
+    .request-card:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-1px);
+    }
+
+    .request-card.highlight {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+    }
 
     .request-card-top { display: flex; justify-content: space-between; align-items: flex-start; }
-    .request-card-medicine { font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
-    .request-card-company { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .request-card-qty { font-weight: 700; color: var(--text-main); white-space: nowrap; }
 
-    .request-card-middle { display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 0.85rem; }
-    .request-card-user { display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
-
-    .request-card-actions { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-    
-    .eye-btn, .action-btn {
-        width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--glass-border);
-        background: transparent; display: flex; align-items: center; justify-content: center;
-        cursor: pointer; transition: all var(--transition-fast);
+    .request-card-medicine {
+        font-weight: 600;
+        color: var(--text-main);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 160px;
     }
+
+    .request-card-company {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .request-card-qty {
+        font-weight: 700;
+        color: var(--text-main);
+        white-space: nowrap;
+    }
+
+    .request-card-middle {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+    }
+
+    .request-card-user {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 140px;
+    }
+
+    .request-card-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .request-card-action-group {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .eye-btn,
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: 1px solid var(--glass-border);
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
     .eye-btn { color: var(--text-muted); }
     .eye-btn:hover { color: var(--primary); background: rgba(59,130,246,0.1); border-color: var(--primary); }
-    
+
     .action-btn.approve { color: var(--success); border-color: var(--success); }
     .action-btn.approve:hover { background: var(--success); color: white; }
-    
+
     .action-btn.reject { color: var(--danger); border-color: var(--danger); }
     .action-btn.reject:hover { background: var(--danger); color: white; }
-    
-    .delete-req-btn {
-        background: transparent; border: 1px solid var(--danger); color: var(--danger);
-        padding: 6px 14px; border-radius: 8px; cursor: pointer; font-weight: 600;
-        font-size: 0.85rem; display: flex; align-items: center; gap: 6px; transition: all var(--transition-fast);
+
+    .action-btn:disabled,
+    .delete-req-btn:disabled,
+    .eye-btn:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+        pointer-events: none;
     }
+
+    .delete-req-btn {
+        background: transparent;
+        border: 1px solid var(--danger);
+        color: var(--danger);
+        padding: 6px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all var(--transition-fast);
+    }
+
     .delete-req-btn:hover { background: var(--danger); color: white; }
 </style>
 
@@ -78,57 +150,91 @@
     <div class="card-header">
         <h2><%= t.adminRequests.title %></h2>
     </div>
+
     <div class="requests-grid" id="requestsGrid">
         <% if (requests.length > 0) { %>
             <% requests.forEach(req => { %>
-            <div class="request-card" id="req-<%= req._id %>" 
-                 data-search-text="<%= req.medicineName.toLowerCase() %> <%= req.companyName.toLowerCase() %> <%= req.user?.name?.toLowerCase() || '' %> <%= req.status.toLowerCase() %> <%= req.quantity %>">
-                <div class="request-card-top">
-                    <div>
-                        <div class="request-card-medicine"><%= req.medicineName %></div>
-                        <div class="request-card-company"><%= req.companyName %></div>
+                <div
+                    class="request-card"
+                    id="req-<%= req._id %>"
+                    data-search-text="<%= req.medicineName.toLowerCase() %> <%= req.companyName.toLowerCase() %> <%= req.user?.name?.toLowerCase() || '' %> <%= req.status.toLowerCase() %> <%= req.quantity %>"
+                >
+                    <div class="request-card-top">
+                        <div>
+                            <div class="request-card-medicine"><%= req.medicineName %></div>
+                            <div class="request-card-company"><%= req.companyName %></div>
+                        </div>
+                        <span class="request-card-qty">x<%= req.quantity %></span>
                     </div>
-                    <span class="request-card-qty">x<%= req.quantity %></span>
-                </div>
-                <div class="request-card-middle">
-                    <div class="request-card-user">
-                        <i class="ph ph-user"></i>
-                        <span><%= req.user ? req.user.name : (t.adminOrders.unknownUser || 'Unknown') %></span>
+
+                    <div class="request-card-middle">
+                        <div class="request-card-user">
+                            <i class="ph ph-user"></i>
+                            <span><%= req.user ? req.user.name : (t.adminOrders.unknownUser || 'Unknown') %></span>
+                        </div>
+
+                        <span class="badge <%= req.status.toLowerCase() %>" id="badge-<%= req._id %>">
+                            <%= req.status.toLowerCase() === 'approved'
+                                ? (t.adminDashboard.approved || 'Approved')
+                                : (req.status.toLowerCase() === 'rejected'
+                                    ? (t.adminDashboard.cancelled || 'Rejected')
+                                    : (t.adminDashboard.pending || 'Pending')) %>
+                        </span>
                     </div>
-                    <span class="badge <%= req.status.toLowerCase() %>" id="badge-<%= req._id %>">
-                        <%= req.status.toLowerCase() === 'approved' ? (t.adminDashboard.approved || 'Approved') : (req.status.toLowerCase() === 'rejected' ? (t.adminDashboard.cancelled || 'Rejected') : (t.adminDashboard.pending || 'Pending')) %>
-                    </span>
-                </div>
-                <div class="request-card-actions">
-                    <button class="eye-btn" 
-                        data-medicine="<%= req.medicineName || '' %>"
-                        data-company="<%= req.companyName || '' %>"
-                        data-shape="<%= req.shapeAndDose || '' %>"
-                        data-trade="<%= req.tradeName || '' %>"
-                        data-scientific="<%= req.scientificName || '' %>"
-                        data-desc="<%= req.description || '' %>"
-                        onclick="openDetailsModal(this)" title="View details">
-                        <i class="ph ph-eye"></i>
-                    </button>
-                    
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <button class="delete-req-btn" data-id="<%= req._id %>" title="Delete Request" onclick="openDeleteModal('<%= req._id %>')">
-                            <i class="ph ph-trash"></i>
+
+                    <div class="request-card-actions">
+                        <button
+                            type="button"
+                            class="eye-btn"
+                            data-medicine="<%- req.medicineName || '' %>"
+                            data-company="<%- req.companyName || '' %>"
+                            data-shape="<%- req.shapeAndDose || '' %>"
+                            data-trade="<%- req.tradeName || '' %>"
+                            data-scientific="<%- req.scientificName || '' %>"
+                            data-description="<%- req.description || '' %>"
+                            title="<%= t.common.viewDetails || 'View details' %>"
+                            style="display: none;"
+                        >
+                            <i class="ph ph-eye" ></i>
                         </button>
-                        <% if (req.status === 'pending') { %>
-                            <button class="action-btn approve" onclick="openActionModal('<%= req._id %>', 'approved')" title="Approve">
-                                <i class="ph ph-check"></i>
+
+                        <div class="request-card-action-group">
+                            <button
+                                type="button"
+                                class="delete-req-btn"
+                                data-id="<%= req._id %>"
+                                title="<%= t.common.delete || 'Delete' %>"
+                            >
+                                <i class="ph ph-trash"></i>
                             </button>
-                            <button class="action-btn reject" onclick="openActionModal('<%= req._id %>', 'rejected')" title="Reject">
-                                <i class="ph ph-x"></i>
-                            </button>
-                        <% } %>
+
+                            <% if (req.status === 'pending') { %>
+                                <button
+                                    type="button"
+                                    class="action-btn approve"
+                                    data-id="<%= req._id %>"
+                                    data-status="approved"
+                                    title="<%= t.adminDashboard.approved || 'Approve' %>"
+                                >
+                                    <i class="ph ph-check"></i>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="action-btn reject"
+                                    data-id="<%= req._id %>"
+                                    data-status="rejected"
+                                    title="<%= t.adminDashboard.cancelled || 'Reject' %>"
+                                >
+                                    <i class="ph ph-x"></i>
+                                </button>
+                            <% } %>
+                        </div>
                     </div>
                 </div>
-            </div>
             <% }) %>
         <% } else { %>
-            <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted);">
+            <div id="emptyState" class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted);">
                 <i class="ph ph-hand-waving" style="font-size: 3rem; margin-bottom: 10px;"></i>
                 <p><%= t.userRequest.noRequests || 'No requests found.' %></p>
             </div>
@@ -137,45 +243,25 @@
 </section>
 
 <div class="modal-backdrop" id="detailsModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px);">
-    <div class="modal-content" style="background: var(--surface); border-radius: 12px; padding: 24px; width: 100%; max-width: 550px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+    <div class="modal-content" style="background: var(--surface-dark); border: 1px solid var(--glass-border); border-radius: 12px; padding: 24px; width: 100%; max-width: 550px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
         <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--glass-border); padding-bottom: 15px;">
             <h2 style="margin: 0; color: var(--text-main);"><%= t.adminRequests.modalTitle || 'Request Details' %></h2>
-            <button onclick="closeModal('detailsModal')" style="background: transparent; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);"><i class="ph ph-x"></i></button>
+            <button type="button" onclick="closeModal('detailsModal')" style="background: transparent; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">
+                <i class="ph ph-x"></i>
+            </button>
         </div>
-        <div id="modalBody" style="display: flex; flex-direction: column; gap: 16px;">
-            </div>
+
+        <div id="modalBody" style="display: flex; flex-direction: column; gap: 16px;"></div>
+
         <div class="modal-actions" style="margin-top: 24px; display: flex; justify-content: flex-end;">
-            <button class="btn-cancel" style="padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 500;" onclick="closeModal('detailsModal')"><%= t.common.close || 'Close' %></button>
-        </div>
-    </div>
-</div>
-
-<div class="modal-backdrop" id="actionConfirmModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px);">
-    <div class="modal-content" style="background: var(--surface); border-radius: 12px; padding: 24px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
-        <div id="actionModalIcon" style="width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 16px;">
-            <i id="actionIcon" class="ph ph-question"></i>
-        </div>
-        <h3 id="actionModalTitle" style="margin: 0 0 10px; color: var(--text-main); font-size: 1.3rem;">Confirm Action</h3>
-        <p id="actionModalText" style="margin: 0 0 24px; color: var(--text-muted); font-size: 0.95rem; line-height: 1.5;">Are you sure you want to proceed?</p>
-        <div class="modal-actions" style="display: flex; gap: 12px; justify-content: center;">
-            <button class="btn-cancel" style="flex: 1; padding: 12px; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 600;" onclick="closeModal('actionConfirmModal')"><%= t.common.cancel || 'Cancel' %></button>
-            <button id="confirmActionBtn" class="btn-primary" style="flex: 1; padding: 12px; border-radius: 8px; border: none; color: white; cursor: pointer; font-family: inherit; font-weight: 600;">Confirm</button>
-        </div>
-    </div>
-</div>
-
-<div class="modal-backdrop" id="deleteRequestModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px);">
-    <div class="modal-content" style="background: var(--surface); border-radius: 12px; padding: 24px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
-        <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(239, 68, 68, 0.1); color: var(--danger); display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 16px;">
-            <i class="ph ph-trash"></i>
-        </div>
-        <h3 style="margin: 0 0 10px; color: var(--text-main); font-size: 1.3rem;"><%= t.common.delete || 'Delete Request' %>?</h3>
-        <p style="margin: 0 0 24px; color: var(--text-muted); font-size: 0.95rem; line-height: 1.5;">
-            <%= t.adminRequests.deleteConfirmMessage || "Are you sure you want to permanently delete this request? This action cannot be undone." %>
-        </p>
-        <div class="modal-actions" style="display: flex; gap: 12px; justify-content: center;">
-            <button class="btn-cancel" style="flex: 1; padding: 12px; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 600;" onclick="closeModal('deleteRequestModal')"><%= t.common.cancel || 'Cancel' %></button>
-            <button id="confirmReqDeleteBtn" class="btn-primary" style="flex: 1; padding: 12px; border-radius: 8px; background: var(--danger); border-color: var(--danger); color: white; cursor: pointer; font-family: inherit; font-weight: 600;"><%= t.common.delete || 'Yes, Delete' %></button>
+            <button
+                type="button"
+                class="btn-cancel"
+                style="padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 500;"
+                onclick="closeModal('detailsModal')"
+            >
+                <%= t.common.cancel || 'Close' %>
+            </button>
         </div>
     </div>
 </div>
@@ -183,7 +269,25 @@
 <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px;"></div>
 
 <script>
-    // ----- Universal Modal Closer -----
+    const texts = {
+        noDescription: <%- JSON.stringify(t.adminRequests.noDescription || 'No description provided') %>,
+        medicine: <%- JSON.stringify(t.adminRequests.medicine || 'Medicine') %>,
+        company: <%- JSON.stringify(t.adminMedicines.company || 'Company') %>,
+        shapeDose: <%- JSON.stringify(t.adminRequests.shapeDose || 'Shape & Dose') %>,
+        tradeName: <%- JSON.stringify(t.userRequest.tradeName || 'Trade Name') %>,
+        scientificName: <%- JSON.stringify(t.userRequest.scientificName || 'Scientific Name') %>,
+        description: <%- JSON.stringify(t.userRequest.description || 'Description') %>,
+        processing: <%- JSON.stringify(t.common.processing || 'Processing...') %>,
+        approved: <%- JSON.stringify(t.adminDashboard.approved || 'Approved') %>,
+        rejected: <%- JSON.stringify(t.adminDashboard.cancelled || 'Rejected') %>,
+        success: <%- JSON.stringify(t.common.success || 'Success') %>,
+        deleteSuccess: <%- JSON.stringify(t.common.success || 'Request deleted successfully') %>,
+        updateError: <%- JSON.stringify(t.adminRequests.errorUpdate || 'Error updating status') %>,
+        deleteError: <%- JSON.stringify(t.common.error || 'Failed to delete request') %>,
+        networkError: <%- JSON.stringify(t.adminRequests.networkError || 'Network Error') %>,
+        noRequests: <%- JSON.stringify(t.userRequest.noRequests || 'No requests found.') %>
+    };
+
     document.querySelectorAll('.modal-backdrop').forEach(overlay => {
         overlay.addEventListener('click', (e) => {
             if (e.target === overlay) closeModal(overlay.id);
@@ -191,49 +295,45 @@
     });
 
     window.closeModal = function(modalId) {
-        document.getElementById(modalId).style.display = 'none';
-        if (modalId === 'actionConfirmModal') pendingAction = null;
-        if (modalId === 'deleteRequestModal') requestIdToDelete = null;
+        const modal = document.getElementById(modalId);
+        if (modal) modal.style.display = 'none';
     };
 
-    // ----- Search Functionality -----
-    const searchInput = document.getElementById('searchInput');
-    const requestCards = document.querySelectorAll('.request-card');
-
-    if(searchInput) {
-        searchInput.addEventListener('input', function() {
-            const term = this.value.toLowerCase().trim();
-            requestCards.forEach(card => {
-                const searchText = card.dataset.searchText || '';
-                const matches = !term || searchText.includes(term);
-                card.style.display = matches ? 'flex' : 'none';
-                if (matches && term) {
-                    card.classList.add('highlight');
-                } else {
-                    card.classList.remove('highlight');
-                }
-            });
-        });
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 
-    // ----- Toast Notifications -----
     function showToast(message, type = 'success') {
         const toastContainer = document.getElementById('toast-container');
         const toast = document.createElement('div');
-        
         const icon = type === 'success' ? '<i class="ph ph-check-circle"></i>' : '<i class="ph ph-warning-circle"></i>';
         const borderColor = type === 'success' ? 'var(--success)' : 'var(--danger)';
-        
+
         toast.style.cssText = `
-            background: var(--surface-dark); border-left: 4px solid ${borderColor};
-            color: var(--text-main); padding: 14px 20px; border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 12px;
-            transition: all 0.3s ease; opacity: 0; transform: translateX(50px); font-weight: 500; font-size: 0.95rem;
+            background: var(--surface-dark);
+            border-left: 4px solid ${borderColor};
+            color: var(--text-main);
+            padding: 14px 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateX(50px);
+            font-weight: 500;
+            font-size: 0.95rem;
         `;
-        
-        toast.innerHTML = `${icon} <span>${message}</span>`;
+
+        toast.innerHTML = `${icon} <span>${escapeHtml(message)}</span>`;
         toastContainer.appendChild(toast);
-        
+
         requestAnimationFrame(() => {
             toast.style.opacity = '1';
             toast.style.transform = 'translateX(0)';
@@ -246,156 +346,192 @@
         }, 3000);
     }
 
-    // ----- 1. Details Modal Logic (Eye Icon) -----
-    window.openDetailsModal = function(btn) {
-        const medicine = btn.getAttribute('data-medicine') || '-';
-        const company = btn.getAttribute('data-company') || '-';
-        const shape = btn.getAttribute('data-shape') || '-';
-        const trade = btn.getAttribute('data-trade') || '-';
-        const scientific = btn.getAttribute('data-scientific') || '-';
-        const desc = btn.getAttribute('data-desc') || <%- JSON.stringify(t.adminRequests.noDescription || "No description provided") %>;
-        
+    function openDetailsModal(req) {
+        const desc = req.description || texts.noDescription;
+
         const body = document.getElementById('modalBody');
-        
-        // BUG FIX: We safely inject the translation titles using JSON.stringify to prevent script breaking
         body.innerHTML = `
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: var(--surface-dark); padding: 16px; border-radius: 12px; border: 1px solid var(--glass-border);">
-                <div><strong style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing: 0.5px;">${<%- JSON.stringify(t.adminRequests.medicine || 'Medicine') %>}</strong><br> <span style="font-weight:600; color:var(--text-main);">${medicine}</span></div>
-                <div><strong style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing: 0.5px;">${<%- JSON.stringify(t.adminMedicines.company || 'Company') %>}</strong><br> <span style="font-weight:600; color:var(--text-main);">${company}</span></div>
-                <div><strong style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing: 0.5px;">${<%- JSON.stringify(t.adminRequests.shapeDose || 'Shape & Dose') %>}</strong><br> <span style="font-weight:600; color:var(--text-main);">${shape}</span></div>
-                <div><strong style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing: 0.5px;">${<%- JSON.stringify(t.userRequest.tradeName || 'Trade Name') %>}</strong><br> <span style="font-weight:600; color:var(--text-main);">${trade}</span></div>
-                <div style="grid-column: 1 / -1;"><strong style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing: 0.5px;">${<%- JSON.stringify(t.userRequest.scientificName || 'Scientific Name') %>}</strong><br> <span style="font-weight:600; color:var(--text-main);">${scientific}</span></div>
-            </div>
-            <div>
-                <strong style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing: 0.5px;">${<%- JSON.stringify(t.userRequest.description || 'Description') %>}</strong>
-                <div style="margin-top:6px; background: var(--surface-dark); border: 1px solid var(--glass-border); padding:16px; border-radius:12px; line-height: 1.6; color:var(--text-main);">
-                    ${desc}
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: rgba(0,0,0,0.15); padding: 16px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                <div>
+                    <strong style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px;">${escapeHtml(texts.medicine)}</strong><br>
+                    <span style="font-weight:600; color:var(--text-main);">${escapeHtml(req.medicineName || '-')}</span>
+                </div>
+
+                <div>
+                    <strong style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px;">${escapeHtml(texts.company)}</strong><br>
+                    <span style="font-weight:600; color:var(--text-main);">${escapeHtml(req.companyName || '-')}</span>
+                </div>
+
+                <div>
+                    <strong style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px;">${escapeHtml(texts.shapeDose)}</strong><br>
+                    <span style="font-weight:600; color:var(--text-main);">${escapeHtml(req.shapeAndDose || '-')}</span>
+                </div>
+
+                <div>
+                    <strong style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px;">${escapeHtml(texts.tradeName)}</strong><br>
+                    <span style="font-weight:600; color:var(--text-main);">${escapeHtml(req.tradeName || '-')}</span>
+                </div>
+
+                <div style="grid-column: 1 / -1;">
+                    <strong style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px;">${escapeHtml(texts.scientificName)}</strong><br>
+                    <span style="font-weight:600; color:var(--text-main);">${escapeHtml(req.scientificName || '-')}</span>
                 </div>
             </div>
+
+            <div>
+                <strong style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px;">${escapeHtml(texts.description)}</strong>
+                <div style="margin-top:6px; background: rgba(0,0,0,0.15); border: 1px solid var(--glass-border); padding:16px; border-radius:12px; line-height: 1.6; color:var(--text-main); white-space: pre-wrap;">${escapeHtml(desc)}</div>
+            </div>
         `;
+
         document.getElementById('detailsModal').style.display = 'flex';
-    };
+    }
 
-    // ----- 2. Approve/Reject Logic & Custom Modal -----
-    let pendingAction = null;
-
-    window.openActionModal = function(id, status) {
-        pendingAction = { id, status };
-        
-        const modal = document.getElementById('actionConfirmModal');
-        const title = document.getElementById('actionModalTitle');
-        const text = document.getElementById('actionModalText');
-        const iconBox = document.getElementById('actionModalIcon');
-        const icon = document.getElementById('actionIcon');
-        const confirmBtn = document.getElementById('confirmActionBtn');
-        
-        // Using JSON.stringify ensures zero syntax errors if a translation has an apostrophe or double quote
-        if (status === 'approved') {
-            title.innerText = <%- JSON.stringify(t.adminRequests.approveTitle || "Approve Request?") %>;
-            text.innerText = <%- JSON.stringify(t.adminRequests.approveConfirm || "Are you sure you want to approve this request? The user will be notified.") %>;
-            iconBox.style.background = 'rgba(34, 197, 94, 0.1)';
-            iconBox.style.color = 'var(--success)';
-            icon.className = 'ph ph-check-circle';
-            confirmBtn.style.background = 'var(--success)';
-            confirmBtn.style.borderColor = 'var(--success)';
-            confirmBtn.innerHTML = '<i class="ph ph-check"></i> Yes, Approve';
-        } else {
-            title.innerText = <%- JSON.stringify(t.adminRequests.rejectTitle || "Reject Request?") %>;
-            text.innerText = <%- JSON.stringify(t.adminRequests.rejectConfirm || "Are you sure you want to reject this request?") %>;
-            iconBox.style.background = 'rgba(239, 68, 68, 0.1)';
-            iconBox.style.color = 'var(--danger)';
-            icon.className = 'ph ph-x-circle';
-            confirmBtn.style.background = 'var(--danger)';
-            confirmBtn.style.borderColor = 'var(--danger)';
-            confirmBtn.innerHTML = '<i class="ph ph-x"></i> Yes, Reject';
-        }
-        
-        modal.style.display = 'flex';
-    };
-
-    document.getElementById('confirmActionBtn').addEventListener('click', async function() {
-        if (!pendingAction) return;
-        
-        const { id, status } = pendingAction;
-        const btn = this;
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="ph ph-spinner ph-spin"></i> Processing...';
+    async function updateRequestStatus(id, status, btn) {
+        const originalHTML = btn.innerHTML;
         btn.disabled = true;
-        
+        btn.innerHTML = '<i class="ph ph-spinner ph-spin"></i>';
+
+        const siblingButtons = btn.parentElement.querySelectorAll('.action-btn');
+        siblingButtons.forEach(button => {
+            button.disabled = true;
+        });
+
         try {
             const res = await fetch(`/admin/requests/${id}/status`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status })
             });
-            
+
             if (res.ok) {
                 const badge = document.getElementById(`badge-${id}`);
                 if (badge) {
                     badge.className = `badge ${status}`;
-                    badge.innerText = status === 'approved' ? <%- JSON.stringify(t.adminDashboard.approved || 'Approved') %> : <%- JSON.stringify(t.adminDashboard.cancelled || 'Rejected') %>;
+                    badge.innerText = status === 'approved' ? texts.approved : texts.rejected;
                 }
-                
+
                 const card = document.getElementById(`req-${id}`);
                 if (card) {
-                    const actionsDiv = card.querySelector('.request-card-actions > div:last-child');
+                    const actionsDiv = card.querySelector('.request-card-action-group');
                     if (actionsDiv) {
                         const approveBtn = actionsDiv.querySelector('.action-btn.approve');
                         const rejectBtn = actionsDiv.querySelector('.action-btn.reject');
-                        if(approveBtn) approveBtn.remove();
-                        if(rejectBtn) rejectBtn.remove();
+                        if (approveBtn) approveBtn.remove();
+                        if (rejectBtn) rejectBtn.remove();
                     }
+
+                    const searchText = card.dataset.searchText || '';
+                    card.dataset.searchText = searchText
+                        .replace(/\bpending\b/i, '')
+                        .trim() + ' ' + status;
                 }
-                showToast(`Request ${status} successfully`, 'success');
+
+                showToast(texts.success, 'success');
             } else {
-                showToast(<%- JSON.stringify(t.adminRequests.errorUpdate || "Error updating status") %>, 'error');
+                btn.innerHTML = originalHTML;
+                siblingButtons.forEach(button => button.disabled = false);
+                showToast(texts.updateError, 'error');
             }
         } catch (err) {
             console.error(err);
-            showToast(<%- JSON.stringify(t.adminRequests.networkError || "Network Error") %>, 'error');
-        } finally {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-            closeModal('actionConfirmModal');
+            btn.innerHTML = originalHTML;
+            siblingButtons.forEach(button => button.disabled = false);
+            showToast(texts.networkError, 'error');
         }
-    });
+    }
 
-    // ----- 3. Delete Request Logic & Custom Modal -----
-    let requestIdToDelete = null;
-
-    window.openDeleteModal = function(id) {
-        requestIdToDelete = id;
-        document.getElementById('deleteRequestModal').style.display = 'flex';
-    };
-
-    document.getElementById('confirmReqDeleteBtn').addEventListener('click', async function() {
-        if (!requestIdToDelete) return;
-        
-        const btn = this; 
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="ph ph-spinner ph-spin"></i> Deleting...';
+    async function deleteRequest(id, btn) {
+        const originalHTML = btn.innerHTML;
         btn.disabled = true;
-        
+        btn.innerHTML = '<i class="ph ph-spinner ph-spin"></i>';
+
         try {
-            const res = await fetch(`/admin/requests/${requestIdToDelete}`, { method: 'DELETE' });
-            
+            const res = await fetch(`/admin/requests/${id}`, { method: 'DELETE' });
+
             if (res.ok) {
-                const card = document.getElementById(`req-${requestIdToDelete}`);
+                const card = document.getElementById(`req-${id}`);
                 if (card) card.remove();
-                showToast('Request deleted successfully', 'success');
+
+                const remainingCards = document.querySelectorAll('.request-card');
+                if (remainingCards.length === 0) {
+                    const grid = document.getElementById('requestsGrid');
+                    grid.innerHTML = `
+                        <div id="emptyState" class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted);">
+                            <i class="ph ph-hand-waving" style="font-size: 3rem; margin-bottom: 10px;"></i>
+                            <p>${escapeHtml(texts.noRequests)}</p>
+                        </div>
+                    `;
+                }
+
+                showToast(texts.deleteSuccess, 'success');
             } else {
-                showToast('Failed to delete request', 'error');
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+                showToast(texts.deleteError, 'error');
             }
         } catch (err) {
             console.error(err);
-            showToast('Network Error', 'error');
-        } finally {
-            btn.innerHTML = originalText;
             btn.disabled = false;
-            closeModal('deleteRequestModal');
+            btn.innerHTML = originalHTML;
+            showToast(texts.networkError, 'error');
+        }
+    }
+
+    const requestsGrid = document.getElementById('requestsGrid');
+
+    requestsGrid.addEventListener('click', function(e) {
+        const eyeBtn = e.target.closest('.eye-btn');
+        if (eyeBtn) {
+            openDetailsModal({
+                medicineName: eyeBtn.dataset.medicine || '',
+                companyName: eyeBtn.dataset.company || '',
+                shapeAndDose: eyeBtn.dataset.shape || '',
+                tradeName: eyeBtn.dataset.trade || '',
+                scientificName: eyeBtn.dataset.scientific || '',
+                description: eyeBtn.dataset.description || ''
+            });
+            return;
+        }
+
+        const approveBtn = e.target.closest('.action-btn.approve');
+        if (approveBtn) {
+            updateRequestStatus(approveBtn.dataset.id, 'approved', approveBtn);
+            return;
+        }
+
+        const rejectBtn = e.target.closest('.action-btn.reject');
+        if (rejectBtn) {
+            updateRequestStatus(rejectBtn.dataset.id, 'rejected', rejectBtn);
+            return;
+        }
+
+        const deleteBtn = e.target.closest('.delete-req-btn');
+        if (deleteBtn) {
+            deleteRequest(deleteBtn.dataset.id, deleteBtn);
         }
     });
 
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const term = this.value.toLowerCase().trim();
+            const requestCards = document.querySelectorAll('.request-card');
+
+            requestCards.forEach(card => {
+                const searchText = (card.dataset.searchText || '').toLowerCase();
+                const matches = !term || searchText.includes(term);
+
+                card.style.display = matches ? 'flex' : 'none';
+
+                if (matches && term) {
+                    card.classList.add('highlight');
+                } else {
+                    card.classList.remove('highlight');
+                }
+            });
+        });
+    }
 </script>
 
 <%- include('partials/admin-footer', { page: 'requests' }) %>

@@ -1,3 +1,5 @@
 node_modules
 .env
 seed.js
+firebase-service-account.json
+seedUser.js

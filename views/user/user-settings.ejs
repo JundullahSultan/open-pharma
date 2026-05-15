@@ -255,29 +255,5 @@
     const themeIcon = document.getElementById('themeIcon');
     const html = document.documentElement;
 
-    // Initialize icon correctly on load
-    if (html.getAttribute('data-theme') === 'light') {
-      themeIcon.classList.replace('ph-moon', 'ph-sun');
-      themeIcon.style.color = "#f59e0b";
-    }
-
-    // Toggle theme on click
-    if (themeBtn) {
-      themeBtn.addEventListener('click', () => {
-        const isLight = html.getAttribute('data-theme') === 'light';
-        
-        if (isLight) {
-          html.removeAttribute('data-theme');
-          localStorage.setItem('theme', 'dark');
-          themeIcon.classList.replace('ph-sun', 'ph-moon');
-          themeIcon.style.color = "var(--text-main)";
-        } else {
-          html.setAttribute('data-theme', 'light');
-          localStorage.setItem('theme', 'light');
-          themeIcon.classList.replace('ph-moon', 'ph-sun');
-          themeIcon.style.color = "#f59e0b";
-        }
-      });
-    }
   });
 </script>
